@@ -37,7 +37,8 @@
 //***************************************************************
 // プロトタイプ宣言
 //***************************************************************
-
+int skillsort_life(void);
+int skill_count_winner(void);
 //***************************************************************
 // グローバル変数
 //***************************************************************
@@ -286,11 +287,14 @@ void GetSkill(int no)
 	PLAYER *player = GetPlayer(0);
 	int old_getskill;				// 直前に権限を持っているプレイヤー
 	int skill_gets;					// スキルを入手した人の番号
+	int skill_life_lower;					// 体力が１番少ないプレイヤーの番号
+	int skill_count_lower;					// 発動回数が1番少ないプレイヤーの番号
 
-									// 5回飛んだプレイヤーが全員権限を持っている
 
-									// 権限を持っているプレイヤーの番号を取得し
-									// 権限を無効化
+											// 5回飛んだプレイヤーが全員権限を持っている
+
+											// 権限を持っているプレイヤーの番号を取得し
+											// 権限を無効化
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
 		if(player[no].kengen == true)
@@ -308,12 +312,61 @@ void GetSkill(int no)
 
 
 	// ライフが少ない人
-
+	skill_life_lower = skillsort_life();
 	// 権限を持った人が一番少ない順番
-
+	skill_count_lower = skill_count_winner();
 	// 権限割り当て
+	/*
+	player[no].kengen =true
+	skill_flag[no].count++;
+	*/
+
+}
 
 
+//******************************************************************************
+// 関数名:	int skillsort_life(void)
+// 引数:	なし
+// 戻り値:	int winner
+// 説明:	プレイヤーの体力を比較して一番ライフが少ないプレイヤーの番号を返す
+//******************************************************************************
+int skillsort_life(void)
+{
+	PLAYER *player = GetPlayer(0);
+	int winner = 0;					// 勝者の番号
+
+									// 今はライフが同じ場合、番号が若いプレイヤーが権利を得る
+
+	for(int no = 1; no < MAX_PLAYER; no++)
+	{
+		// 現在の勝者の体力より少ない人がでたら
+		if(player[winner].life > player[no].life)
+		{
+			winner = no;								// 権利を譲る
+		}
+
+	}
+
+	return winner;
+}
+
+//******************************************************************
+// 関数名:	int skill_count_winner(void)
+// 引数:	なし
+// 戻り値:	count_winner
+// 説明:	スキルの発動回数が少ない人の番号を返す
+//******************************************************************
+int skill_count_winner(void)
+{
+	int count_winner = 0;				// 0番目から比較開始
+	for(int i = 1; i < MAX_PLAYER; i++)	// 0番目と1番目から比較開始
+	{
+		if(skill_flag[count_winner].count > skill_flag[i].count)
+		{// 自分よりも小さい値が見つかった
+			count_winner = i;
+		}
+	}
+	return count_winner;
 }
 
 //******************************************************************************
