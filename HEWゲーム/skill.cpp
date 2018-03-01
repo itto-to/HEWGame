@@ -42,13 +42,13 @@
 // グローバル変数
 //***************************************************************
 SKILL skillWk;			// スキル構造体
-
-						//***************************************************************
-						// 関数名:		HRESULT InitSkill(void)
-						// 引数:		なし
-						// 戻り値:		なし
-						// 説明:		スキル関連の初期 化
-						//***************************************************************
+SKILL_FLAG skill_flag[MAX_PLAYER];
+//***************************************************************
+// 関数名:		HRESULT InitSkill(void)
+// 引数:		なし
+// 戻り値:		なし
+// 説明:		スキル関連の初期 化
+//***************************************************************
 HRESULT InitSkill(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
@@ -69,10 +69,10 @@ HRESULT InitSkill(void)
 	// フラグ初期化
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
-		skillWk.flag[no].flag_no = 0;
-		skillWk.flag[no].use_count = 0;
-		skillWk.flag[no].get = false;
-		skillWk.flag[no].count = 0;
+		skill_flag[no].flag_no = 0;
+		skill_flag[no].use_count = 0;
+		skill_flag[no].get = false;
+		skill_flag[no].count = 0;
 	}
 
 	return S_OK;
@@ -295,12 +295,12 @@ void GetSkill(int no)
 	{
 		if(player[no].kengen == true)
 		{
-			skillWk.flag[no].get = true;
+			skill_flag[no].get = true;
 			player[no].kengen == false;
 		}
 		else
 		{
-			skillWk.flag[no].get = false;
+			skill_flag[no].get = false;
 		}
 	}
 

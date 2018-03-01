@@ -31,7 +31,6 @@ typedef struct
 	int						lv;									// スキルのレベル
 	bool					kengen;								// 権限は既に割りふてられている？
 
-	SKILL_FLAG				flag[MAX_PLAYER];
 
 }SKILL;
 
