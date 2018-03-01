@@ -18,7 +18,8 @@
 // マクロ定義
 //*****************************************************************************
 #define STAGE_FILE		"data/stage.csv"
-#define TEXTURE_OBSTACLE "data/TEXTURE/ワシ_平原_スライディング.png"
+#
+#define TEXTURE_PLAIN_SLIDING "data/TEXTURE/ワシ_平原_スライディング.png"
 #define MAX_OBSTACLE	(256)
 #define OBSTACLE_WIDTH	(100)
 #define OBSTACLE_HEIGHT	(100)
@@ -34,10 +35,11 @@ void SetStageData(STAGE stage);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
+
 STAGE g_stage;		// 現在のステージ
 LANE g_lane[MAX_PLAYER];
 OBSTACLE g_obstacle;
-LANE_DATA g_lane_data[STAGE_MAX];
+STAGE_DATA g_stage_data[STAGE_MAX];
 
 
 HRESULT InitStage(void)
@@ -47,8 +49,13 @@ HRESULT InitStage(void)
 	// ファイルからステージ情報読込
 	ReadStageData();
 
+	// テクスチャの読み込み
+	D3DXCreateTextureFromFile(pDevice,					// デバイスへのポインタ
+		TEXTURE_PLAIN_SLIDING,		// ファイルの名前
+		&g_obstacle.texture);	// 読み込むメモリー
+
 	// レーン初期化
-	for (int no = 0; no < MAX_PLAYER; no++)
+	for (int no = 0; no < 1; no++)
 	{
 		g_lane[no].use = true;
 		g_lane[no].speed_factor = 1.0f;
@@ -65,17 +72,10 @@ HRESULT InitStage(void)
 
 		// 画面外判定初期化
 		InitBoundingBox(&g_obstacle.screen_box, D3DXVECTOR3(0.0f, 0.0f, 0.0f), OBSTACLE_WIDTH, OBSTACLE_HEIGHT, 0.0f);
+
+		// 頂点作成
+		MakeVertex(pDevice, &g_obstacle.vtx, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
 	}
-
-	// 頂点作成
-	MakeVertex(pDevice, &g_obstacle.vtx, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
-
-	// テクスチャの読み込み
-	D3DXCreateTextureFromFile(pDevice,					// デバイスへのポインタ
-		TEXTURE_OBSTACLE,		// ファイルの名前
-		&g_obstacle.texture);	// 読み込むメモリー
-
-
 
 	return S_OK;
 }
@@ -192,24 +192,24 @@ void ReadStageData(void)
 
 			if (no == ',')
 			{
-				fscanf(file, "%[^\n]\n");
+				fscanf(file, "%*[^\n]\n");
 				break;
 			}
 			else if (no == '0')
 			{
-				g_lane_data[stage_no].tile[tile_no] = 0;
+				g_stage_data[stage_no].tile[tile_no] = 0;
 			}
 			else if (no == '1')
 			{
-				g_lane_data[stage_no].tile[tile_no] = 1;
+				g_stage_data[stage_no].tile[tile_no] = 1;
 			}
 			else if (no == '2')
 			{
-				g_lane_data[stage_no].tile[tile_no] = 2;
+				g_stage_data[stage_no].tile[tile_no] = 2;
 			}
 			else if (no == '3')
 			{
-				g_lane_data[stage_no].tile[tile_no] = 3;
+				g_stage_data[stage_no].tile[tile_no] = 3;
 			}
 			tile_no++;
 
@@ -217,22 +217,21 @@ void ReadStageData(void)
 
 			if (c == '\n' || c == EOF)
 			{
-				int a = 0;
 				break;
 			}
 		}
-		g_lane_data[stage_no].length = tile_no;
+		g_stage_data[stage_no].length = tile_no;
 	}
 
 	// ファイルクローズ
-	if (file)
-		fclose(file);
+	fclose(file);
 }
 
 void SetStageData(STAGE stage)
 {
-	for (int i = 0; i < g_lane_data[stage].length; i++)
+	for (int i = 0; i < g_stage_data[stage].length; i++)
 	{
-		g_lane_data[stage];
+		g_stage_data[stage].tile;
 	}
 }
+

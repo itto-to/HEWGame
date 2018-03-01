@@ -45,9 +45,9 @@ typedef struct {
 } LANE;
 
 typedef struct {
-	int length;
+	int length;		
 	char tile[MAX_LANE_DATA];
-} LANE_DATA;
+} STAGE_DATA;
 
 typedef struct {
 	int lane_no;					// Š‘®‚·‚éƒŒ[ƒ“‚Ì”Ô†
