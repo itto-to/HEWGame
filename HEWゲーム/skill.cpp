@@ -9,7 +9,6 @@
 // インクルードファイル
 //***************************************************************
 #include "skill.h"
-#include "player.h"
 
 //***************************************************************
 // マクロ定義
@@ -34,36 +33,28 @@
 #define SKILLBAR_HEIGHT	(90.0f)
 
 // その他ゲージ関連
-#define LVUP_POINT	(5)			// レベルアップに必要な値
+#define SKILL_LEVELUP	(5)			// レベルアップに必要な値
 //***************************************************************
 // プロトタイプ宣言
 //***************************************************************
-
 
 //***************************************************************
 // グローバル変数
 //***************************************************************
 SKILL skillWk;			// スキル構造体
-
+SKILL_FLAG skill_flag[MAX_PLAYER];
 //***************************************************************
 // 関数名:		HRESULT InitSkill(void)
 // 引数:		なし
 // 戻り値:		なし
-// 説明:		スキル関連の初期化
+// 説明:		スキル関連の初期 化
 //***************************************************************
 HRESULT InitSkill(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	// 頂点情報の作成
-	MakeVertexSkill(pDevice);
-
-	//スキルレベルを初期化
-	skillWk.lv = 0;
-	// スキルゲージの値を初期化
-	skillWk.gage = 0.0f;
-	// レベルアップに必要な値を設定
-	skillWk.gage_lvup = LVUP_POINT;
+	//MakeVertexModellife(pDevice);
 
 	// ゲージ
 	D3DXCreateTextureFromFile(pDevice,
@@ -74,7 +65,16 @@ HRESULT InitSkill(void)
 	D3DXCreateTextureFromFile(pDevice,
 		SKILL_BAR,
 		&skillWk.Texture_waku);
-			
+
+	// フラグ初期化
+	for(int no = 0; no < MAX_PLAYER; no++)
+	{
+		skill_flag[no].flag_no = 0;
+		skill_flag[no].use_count = 0;
+		skill_flag[no].get = false;
+		skill_flag[no].count = 0;
+	}
+
 	return S_OK;
 
 }
@@ -127,9 +127,9 @@ void UpdateSkill(float gageup)
 
 	// スキルゲージ上昇
 	skillWk.gage += gageup;
-	
+
 	// もしゲージが一定以上貯まっていたなら
-	if(skillWk.gage >= LVUP_POINT)
+	if(skillWk.gage >= 5)
 	{
 		skillWk.lv++;				// レベルを上げて
 		skillWk.gage = 0.0f;		// 値を初期化
@@ -221,7 +221,7 @@ HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice)
 		pVtx[1].vtx = D3DXVECTOR3(SKILLGAGE_POS_X + SKILLGAGE_WIDTH, SKILLGAGE_POS_Y, 0.0f);
 		pVtx[2].vtx = D3DXVECTOR3(SKILLGAGE_POS_X, SKILLGAGE_POS_Y + SKILLGAGE_HEIGHT, 0.0f);
 		pVtx[3].vtx = D3DXVECTOR3(SKILLGAGE_POS_X + SKILLGAGE_WIDTH, SKILLGAGE_POS_Y + SKILLGAGE_HEIGHT, 0.0f);
-	
+
 		// テクスチャのパースペクティブコレクト用
 		pVtx[0].rhw =
 			pVtx[1].rhw =
@@ -233,13 +233,13 @@ HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice)
 		pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 		pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 		pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	
+
 		// テクスチャ座標の設定
 		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
 		pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
 		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
 		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
-	
+
 		// 頂点データをアンロック
 		skillWk.Buff_waku->Unlock();
 	}
@@ -278,33 +278,40 @@ void SetColorSkill(void)
 // 関数名:	void GetSkill(no)
 // 引数:	5回飛んだプレイヤーの番号
 // 戻り値:
-// 説明:	スキルの権限を持っているプレイヤーを決定
+// 説明:	条件を満たしているプレイヤーのうち、誰に権限を与えるか決定
 //*****************************************************************************
 void GetSkill(int no)
-{	
+{
 	// プレイヤーのポインター初期化！
 	PLAYER *player = GetPlayer(0);
 	int old_getskill;				// 直前に権限を持っているプレイヤー
-	
+	int skill_gets;					// スキルを入手した人の番号
 
-	//// 既に権限を持っているプレイヤーはいる？
-	//for(int i = 0; i< MAX_PLAYER; no++)
-	//{
-	//	if(player[i].kengen == true)
-	//	{
-	//		old_getskill = i;					// 権限を持っているプレイヤーの番号を保存し
-	//		player[i].kengen = false;			// フラグをオフに
-	//		break;
-	//	}
-	//}
+									// 5回飛んだプレイヤーが全員権限を持っている
+
+									// 権限を持っているプレイヤーの番号を取得し
+									// 権限を無効化
+	for(int no = 0; no < MAX_PLAYER; no++)
+	{
+		if(player[no].kengen == true)
+		{
+			skill_flag[no].get = true;
+			player[no].kengen == false;
+		}
+		else
+		{
+			skill_flag[no].get = false;
+		}
+	}
 
 
-	//// 一度全てのフラグを初期化
-	//player[no].kengen = true;		// 5回飛んだプレイヤーに権限付与
-	
+
+
 	// ライフが少ない人
 
 	// 権限を持った人が一番少ない順番
+
+	// 権限割り当て
 
 
 }
