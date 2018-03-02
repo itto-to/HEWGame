@@ -94,17 +94,17 @@ void ExitPlayerState(PLAYER *player) {
 void UpdatePlayerOnGround(PLAYER *player)
 {
 	// ジャンプ処理
-	if (GetKeyboardTrigger(DIK_Z))
+	if (IsButtonTriggered(player->lane_no, BUTTON_A) || GetKeyboardTrigger(DIK_Z))
 	{
 		player->move.y = PLAYER_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
 	}
-	else if (GetKeyboardTrigger(DIK_X))
+	else if (IsButtonTriggered(player->lane_no, BUTTON_C) || GetKeyboardTrigger(DIK_X))
 	{
 		player->move.y = PLAYER_BIG_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
 	}
-	else if (GetKeyboardTrigger(DIK_DOWN))	// スライディング処理
+	else if (IsButtonTriggered(player->lane_no, BUTTON_DOWN) || GetKeyboardTrigger(DIK_DOWN))	// スライディング処理
 	{
 		player->next_state = PLAYER_SLIDING;
 	}
