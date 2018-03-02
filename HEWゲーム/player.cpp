@@ -101,16 +101,16 @@ HRESULT InitPlayer(void)
 	// テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,	// デバイスへのポインタ
 		TEXTURE_PLAYER_KNIGHT,			// ファイルの名前
-		&g_playerWk[0].texture);		// 読み込むメモリー
+		&g_playerWk[KNIGHT].texture);		// 読み込むメモリー
 	D3DXCreateTextureFromFile(pDevice,	// デバイスへのポインタ
 		TEXTURE_PLAYER_WIZARD,			// ファイルの名前
-		&g_playerWk[1].texture);		// 読み込むメモリー
+		&g_playerWk[WIZARD].texture);		// 読み込むメモリー
 	D3DXCreateTextureFromFile(pDevice,	// デバイスへのポインタ
 		TEXTURE_PLAYER_THIEF,			// ファイルの名前
-		&g_playerWk[2].texture);		// 読み込むメモリー
+		&g_playerWk[THIEF].texture);		// 読み込むメモリー
 	D3DXCreateTextureFromFile(pDevice,	// デバイスへのポインタ
 		TEXTURE_PLAYER_COOK,			// ファイルの名前
-		&g_playerWk[3].texture);		// 読み込むメモリー
+		&g_playerWk[COOK].texture);		// 読み込むメモリー
 
 	return S_OK;
 }
