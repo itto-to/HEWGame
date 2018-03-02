@@ -46,12 +46,12 @@ int skill_count_winner(void);
 SKILL skillWk;							// スキル構造体
 SKILL_FLAG skill_flag[MAX_PLAYER];
 bool skillcheck_ok;						// スキル発動の権利を持っているプレイヤーが1人かどうか
-										//***************************************************************
-										// 関数名:		HRESULT InitSkill(void)
-										// 引数:		なし
-										// 戻り値:		なし
-										// 説明:		スキル関連の初期 化
-										//***************************************************************
+//***************************************************************
+// 関数名:		HRESULT InitSkill(void)
+// 引数:		なし
+// 戻り値:		なし
+// 説明:		スキル関連の初期 化
+//***************************************************************
 HRESULT InitSkill(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
@@ -77,6 +77,9 @@ HRESULT InitSkill(void)
 		skill_flag[no].get = false;
 		skill_flag[no].count = 0;
 	}
+
+	// まだ権限は割り振られていない
+	skillWk.kengen = false;
 
 	return S_OK;
 
@@ -140,27 +143,37 @@ void UpdateSkill(float gageup)
 		skillWk.gage = 0.0f;		// 値を初期化
 	}
 
-	// 権限の付与
+	// もし権限がまだ誰にも割り当てられていない場合
+	// 権限を決める
 
-	// skillpointが5になっているプレイヤーの人数を確認
-	for(int i = 0; i < MAX_PLAYER; i++)
+	if(skillWk.kengen == false)
 	{
-		if(player[i].skillpoint >= 5)
+
+		// skillpointが5になっているプレイヤーの人数を確認
+		for(int i = 0; i < MAX_PLAYER; i++)
 		{
-			player[i].kengen = true;
-			skillget_count++;
+			if(player[i].skillpoint >= 5)
+			{
+				player[i].kengen = true;
+				skillget_count++;
+			}
+			else
+			{
+				player[i].kengen = false;
+			}
+
 		}
+		// 2人以上が権限を持っている場合、条件判定へ移動
+		if(skillget_count >= 2)
+		{
+			skillcheck_ok = false;			// 権利の所有者は1人だけではない
+			GetSkill(0);
+		}
+
 		else
 		{
-			player[i].kengen = false;
+			skillWk.kengen = true;
 		}
-
-	}
-	// 2人以上が権限を持っている場合、条件判定へ移動
-	if(skillget_count >= 2)
-	{
-		skillcheck_ok = false;			// 権利の所有者は1人だけではない
-		GetSkill(0);
 	}
 
 }
@@ -318,6 +331,11 @@ void GetSkill(int no)
 		// 権限を持った人が一番少ない順番
 		skill_count_lower = skill_count_winner();
 	}
+	else
+	{
+		skillWk.kengen = true;
+	}
+
 
 	// それでも駄目な場合の処理
 
@@ -331,6 +349,7 @@ void GetSkill(int no)
 			{
 				break;
 				skillcheck_ok = true;
+				skillWk.kengen = true;
 			}
 		}
 
@@ -344,11 +363,7 @@ void GetSkill(int no)
 		}
 	}
 
-	// 権限割り当て
-	/*
-	player[no].kengen =true
-	skill_flag[no].count++;
-	*/
+
 
 }
 
