@@ -14,8 +14,11 @@
 //***************************************************************
 // マクロ定義
 //***************************************************************
-#define SKILL_WAKU		"data/TEXTURE/lifegreen.png"		// スキルゲージ
-#define SKILL_BAR		"data/TEXTURE/lifewaku.png"		// スキルゲージのバー
+#define SKILL_WAKU		"data/TEXTURE/hpback.png"		// スキルゲージ
+#define SKILL_BAR		"data/TEXTURE/hpgreen.png"		// スキルゲージのバー
+//#define SKILL_BAR2
+
+
 
 // ゲージの枠部分
 // 位置
@@ -46,18 +49,18 @@ int skill_count_winner(void);
 SKILL skillWk;							// スキル構造体
 SKILL_FLAG skill_flag[MAX_PLAYER];
 bool skillcheck_ok;						// スキル発動の権利を持っているプレイヤーが1人かどうか
-//***************************************************************
-// 関数名:		HRESULT InitSkill(void)
-// 引数:		なし
-// 戻り値:		なし
-// 説明:		スキル関連の初期 化
-//***************************************************************
+										//***************************************************************
+										// 関数名:		HRESULT InitSkill(void)
+										// 引数:		なし
+										// 戻り値:		なし
+										// 説明:		スキル関連の初期 化
+										//***************************************************************
 HRESULT InitSkill(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	// 頂点情報の作成
-	MakeVertexSkill(pDevice);
+	//MakeVertexModellife(pDevice);
 
 	// ゲージ
 	D3DXCreateTextureFromFile(pDevice,
@@ -194,6 +197,18 @@ void DrawSkill(void)
 	// 表示するバーの長さ
 	Draw_Skillbar = (skill_hiritsu * SKILLBAR_WIDTH);
 
+	// 枠を描画
+	{
+		// 頂点バッファをデバイスのデータストリームにバインド
+		pDevice->SetStreamSource(0, skillWk.Buff_waku, 0, sizeof(VERTEX_2D));
+		// 頂点フォーマットの設定
+		pDevice->SetFVF(FVF_VERTEX_2D);
+		// テクスチャの設定
+		pDevice->SetTexture(0, skillWk.Texture_waku);
+		// ポリゴンの描画
+		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+
+	}
 
 	// ライフゲージを描画
 	{
@@ -203,18 +218,6 @@ void DrawSkill(void)
 		pDevice->SetFVF(FVF_VERTEX_2D);
 		// テクスチャの設定
 		pDevice->SetTexture(0, skillWk.Texture_bar);
-		// ポリゴンの描画
-		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
-	}
-
-	// 枠を描画
-	{
-		// 頂点バッファをデバイスのデータストリームにバインド
-		pDevice->SetStreamSource(0, skillWk.Buff_waku, 0, sizeof(VERTEX_2D));
-		// 頂点フォーマットの設定
-		pDevice->SetFVF(FVF_VERTEX_2D);
-		// テクスチャの設定
-		pDevice->SetTexture(0, skillWk.Texture_waku);
 		// ポリゴンの描画
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 	}
@@ -353,12 +356,13 @@ void GetSkill(int no)
 			}
 		}
 
-		// それ以外のプレイヤーは権限はく奪
+		// それ以外のプレイヤーは権限剥奪及びポイントリセット
 		for(int i = 0; i < MAX_PLAYER; i++)
 		{
 			if(player[i].kengen == true && i != unmakase)
 			{
 				player[i].kengen = false;
+				SkillReset(i);
 			}
 		}
 	}
@@ -394,8 +398,13 @@ int skillsort_life(void)
 		if(player[winner].life > player[no].life)
 		{
 			player[winner].kengen = false;				// 権限を失い
+			SkillReset(winner);							// ポイントも失う
 			winner = no;								// その人をwinnerに
 		}
+
+
+
+
 	}
 
 	return winner;
@@ -436,6 +445,7 @@ int skill_count_winner(void)
 		else if(skill_flag[count_winner].count > skill_flag[i].count)
 		{// 自分よりも小さい値が見つかった
 			player[count_winner].kengen = false;		// 権限をはく奪して
+			SkillReset(count_winner);					// ポイントもリセット
 			count_winner = i;							// 勝者を残す
 		}
 	}
@@ -453,6 +463,11 @@ void SkillReset(int no)
 	player[no].skillpoint = 0;
 }
 
+
+//*******************************************************************************
+// 関数名 void SKILLON(int lv)
+// 
+
 //**********************************************************************
 // 関数名:	void GetWinner(void)
 // 引数:	なし
@@ -463,4 +478,15 @@ void SkillReset(int no)
 //*******************************************************************
 
 // 無敵時間の間はカウントをプラスされない！！！
+/*
+stage.h内のGetRane
+speedfactor
+//*****************************************************************************
+typedef struct {
+bool use;			// プレイヤーが参加していればtrue
+float speed_factor;	ここを弄るとスピード操作が可能(1.0未満で遅く)
+float lane_length;	// レーン1週分の長さ
+} LANE;
 
+
+*/
