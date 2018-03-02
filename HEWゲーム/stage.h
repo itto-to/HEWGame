@@ -36,6 +36,12 @@ enum OBSTACLE_TYPE {
 	OBSTACLE_MAX,
 };
 
+enum SKILLPOINT_STATE {
+	SKILL_NOT_YET,	// まだスキルポイントを与えていない
+	SKILL_HAS_GIVEN,	// スキルポイントを付与済み
+	SKILL_COLLIDED	// 衝突したのでスキルポイントを与えない
+};
+
 //*****************************************************************************
 // 構造体宣言
 //*****************************************************************************
@@ -46,12 +52,15 @@ typedef struct {
 } LANE;
 
 typedef struct {
-	int length;		
-	char tile[MAX_LANE_DATA];
+	int num_tile;				// マスの数
+	char tile[MAX_LANE_DATA];	// マス情報
+	float lane_length;			// レーンの長さ
 } STAGE_DATA;
 
 typedef struct {
 	bool use;						// 使用しているかどうか
+	bool should_give_skillpoint;	// スキルポイントを与えていいか
+	SKILLPOINT_STATE skill_state;	// スキルポイントを与えたか
 	int lane_no;					// 所属するレーンの番号
 	STAGE stage;					// 所属するステージ
 	OBSTACLE_TYPE obstacle_type;	// 障害物のタイプ

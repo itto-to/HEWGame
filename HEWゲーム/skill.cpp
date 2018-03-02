@@ -14,8 +14,8 @@
 //***************************************************************
 // マクロ定義
 //***************************************************************
-#define SKILL_WAKU		"data/TEXTURE/hpback.png"		// スキルゲージ
-#define SKILL_BAR		"data/TEXTURE/hpgreen.png"		// スキルゲージのバー
+#define SKILL_WAKU		"data/TEXTURE/lifegreen.png"		// スキルゲージ
+#define SKILL_BAR		"data/TEXTURE/lifewaku.png"		// スキルゲージのバー
 
 // ゲージの枠部分
 // 位置
@@ -57,7 +57,7 @@ HRESULT InitSkill(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	// 頂点情報の作成
-	//MakeVertexModellife(pDevice);
+	MakeVertexSkill(pDevice);
 
 	// ゲージ
 	D3DXCreateTextureFromFile(pDevice,
@@ -194,18 +194,6 @@ void DrawSkill(void)
 	// 表示するバーの長さ
 	Draw_Skillbar = (skill_hiritsu * SKILLBAR_WIDTH);
 
-	// 枠を描画
-	{
-		// 頂点バッファをデバイスのデータストリームにバインド
-		pDevice->SetStreamSource(0, skillWk.Buff_waku, 0, sizeof(VERTEX_2D));
-		// 頂点フォーマットの設定
-		pDevice->SetFVF(FVF_VERTEX_2D);
-		// テクスチャの設定
-		pDevice->SetTexture(0, skillWk.Texture_waku);
-		// ポリゴンの描画
-		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
-
-	}
 
 	// ライフゲージを描画
 	{
@@ -215,6 +203,18 @@ void DrawSkill(void)
 		pDevice->SetFVF(FVF_VERTEX_2D);
 		// テクスチャの設定
 		pDevice->SetTexture(0, skillWk.Texture_bar);
+		// ポリゴンの描画
+		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+	}
+
+	// 枠を描画
+	{
+		// 頂点バッファをデバイスのデータストリームにバインド
+		pDevice->SetStreamSource(0, skillWk.Buff_waku, 0, sizeof(VERTEX_2D));
+		// 頂点フォーマットの設定
+		pDevice->SetFVF(FVF_VERTEX_2D);
+		// テクスチャの設定
+		pDevice->SetTexture(0, skillWk.Texture_waku);
 		// ポリゴンの描画
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 	}
@@ -396,8 +396,6 @@ int skillsort_life(void)
 			player[winner].kengen = false;				// 権限を失い
 			winner = no;								// その人をwinnerに
 		}
-
-
 	}
 
 	return winner;

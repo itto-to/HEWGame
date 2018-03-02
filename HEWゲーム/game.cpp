@@ -158,9 +158,6 @@ void CheckHitPlayerObstacle(void)
 	{
 		PLAYER *player = GetPlayer(player_no);
 
-		if (player->is_invincible)	// 無敵なら判定しない
-			continue;
-
 		// プレイヤーのバウンディングボックス取得
 		BOUNDING_BOX playerBox = ToWorldBoundingBox(player->hit_box, player->pos);
 
@@ -174,11 +171,17 @@ void CheckHitPlayerObstacle(void)
 
 			if (IsIntersectedBoundingBox(playerBox, obstacleBox))
 			{
-				// プレイヤーのライフ減少
-				player->life--;
-				// 無敵状態に
-				player->is_invincible = true;
-				player->invincible_counter = 0;
+				// 無敵じゃなければプレイヤーのライフ減少
+				if (!player->is_invincible)
+				{
+					player->life--;
+					// 無敵状態に
+					player->is_invincible = true;
+					player->invincible_counter = 0;
+				}
+
+				// ぶつかった障害物はスキルポイントを与えない
+				obstacle->should_give_skillpoint = false;
 			}
 		}
 	}

@@ -74,7 +74,8 @@ HRESULT InitPlayer(void)
 	{
 		g_playerWk[no].texture = NULL;
 
-		g_playerWk[no].lane_no      = no;
+		g_playerWk[no].lane_no = no;
+		g_playerWk[no].skillpoint = 0;
 		g_playerWk[no].pos     = D3DXVECTOR3(PLAYER_POS_X, LANE_Y(no), LANE_Z(no));
 		g_playerWk[no].move    = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_playerWk[no].rot     = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -208,6 +209,7 @@ void DrawPlayer(void)
 		PrintDebugProc("***プレイヤー%d番***\n", no);
 		PrintDebugProc("座標 X：%f Y:%f Z:%f\n", pos.x, pos.y, pos.z);
 		PrintDebugProc("ライフ : %d\n", g_playerWk[no].life);
+		PrintDebugProc("スキルポイント : %d \n", g_playerWk[no].skillpoint);
 
 		switch (g_playerWk[no].state)
 		{
@@ -336,4 +338,15 @@ D3DXVECTOR3 GetMovePlayer(void)
 int NumPlayer(void)
 {
 	return g_num_player;
+}
+
+//******************************************************************************
+// 関数名:	void IncreaseSkillpoint(int player_no)
+// 引数:	int プレイヤー番号
+// 戻り値:	void
+// 説明:	指定したプレイヤーのスキルポイントを増加
+//******************************************************************************
+void IncreaseSkillpoint(int player_no)
+{
+	g_playerWk[player_no].skillpoint++;
 }

@@ -37,9 +37,11 @@
 #define TEXTURE_SNOW_LARGEJUMP "data/TEXTURE/スノーマン_雪_大ジャンプ.png"
 #define TEXTURE_SNOW_SLIDING   "data/TEXTURE/雪玉_雪_スライディング.png"
 
-#define OBSTACLE_WIDTH	(100)
-#define OBSTACLE_HEIGHT	(100)
-#define OBSTACLE_DEFAULT_MOVE	(D3DXVECTOR3(0.0f, 0.0f, 0.0f))
+#define JUMP_OVER_DECISION_POS_X	(400.0f)
+
+#define OBSTACLE_WIDTH	(100.0f)
+#define OBSTACLE_HEIGHT	(100.0f)
+#define OBSTACLE_DEFAULT_MOVE	(D3DXVECTOR3(10.0f, 0.0f, 0.0f))
 #define OBSTACLE_PADDING	(SCREEN_WIDTH)
 
 #define OBSTACLE_SCREEN_BOX	{D3DXVECTOR3(-OBSTACLE_WIDTH / 2, -OBSTACLE_HEIGHT / 2, 0.0f), D3DXVECTOR3(OBSTACLE_WIDTH / 2, OBSTACLE_HEIGHT / 2, 0.0f)}
@@ -120,14 +122,6 @@ HRESULT InitStage(void)
 		}
 	}
 
-	//for (int stage_no; stage_no < STAGE_MAX; stage_no++) {
-	//	for (int obstacle_no; obstacle_no < OBSTACLE_MAX; obstacle_no++) {
-	//		D3DXCreateTextureFromFile(pDevice,					// デバイスへのポインタ
-	//			TEXTURE_PLAIN_SLIDING,		// ファイルの名前
-	//			&g_texture[stage_no][obstacle_no]);	// 読み込むメモリー
-	//	}
-	//}
-
 	// 頂点作成
 	MakeVertex(pDevice, &g_vtx, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
 
@@ -168,7 +162,10 @@ void UpdateStage(void)
 		if (GetKeyboardPress(DIK_O)) {
 			g_lane[no].speed_factor -= 0.1f;
 		}
-		PrintDebugProc("速度係数：%f", g_lane[no].speed_factor);
+
+		// TEST: 座標表示
+		PrintDebugProc("速度係数：%f\n", g_lane[no].speed_factor);
+		PrintDebugProc("敵座標X：%f\n", g_obstacle[0][0].pos.x);
 	}
 #endif
 
@@ -177,22 +174,43 @@ void UpdateStage(void)
 	{
 		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++)
 		{
-			if (!g_obstacle[player_no][obstacle_no].use)
+			OBSTACLE *obstacle = &g_obstacle[player_no][obstacle_no];
+			if (!obstacle->use)
 				continue;
 
-			g_obstacle[player_no][obstacle_no].pos += g_obstacle[player_no][obstacle_no].move * g_lane[g_obstacle[player_no][obstacle_no].lane_no].speed_factor;
+			obstacle->pos += obstacle->move * g_lane[obstacle->lane_no].speed_factor;
+
+			PLAYER *player = GetPlayer(player_no);
+			// プレイヤーが障害物を飛び越えたか判定
+			// プレイヤーが無敵状態でない かつ 障害物がスキルポイントを未付与
+			if ((obstacle->pos.x > JUMP_OVER_DECISION_POS_X) && obstacle->should_give_skillpoint && !player->is_invincible)
+			{
+				player->skillpoint++;
+				obstacle->should_give_skillpoint = false;
+			}
 		}
 	}
 
-	// 画面右からに出たら位置リセット
 	for (int player_no = 0; player_no < NumPlayer(); player_no++)
 	{
 		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++)
 		{
 			BOUNDING_BOX worldBox = ToWorldBoundingBox(g_obstacle[player_no][obstacle_no].hit_box, g_obstacle[player_no][obstacle_no].pos);
+			// 画面右外に出たか判定
 			if (IsObjectOffscreen(worldBox) && (g_obstacle[player_no][obstacle_no].pos.x > 0.0f))
-			{
-				g_obstacle[player_no][obstacle_no].pos.x -= SCREEN_WIDTH;
+			{	
+				// 現在のステージと同じならリセット
+				if (g_obstacle[player_no][obstacle_no].stage == g_stage)
+				{
+					// レーンの長さ分戻す
+					g_obstacle[player_no][obstacle_no].pos.x -= g_stage_data[g_stage].lane_length;
+					// スキルポイントを与えられるように
+					g_obstacle[player_no][obstacle_no].should_give_skillpoint = true;
+				}
+				else // 現在のステージと違うなら消去
+				{
+					g_obstacle[player_no][obstacle_no].use = false;
+				}
 			}
 		}
 	}
@@ -200,8 +218,10 @@ void UpdateStage(void)
 
 void DrawStage(void)
 {
-	for (int player_no = 0; player_no < NumPlayer(); player_no++) {
-		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++) {
+	for (int player_no = 0; player_no < NumPlayer(); player_no++)
+	{
+		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++)
+		{
 			if (!g_obstacle[player_no][obstacle_no].use)
 				continue;
 
@@ -319,7 +339,8 @@ void ReadStageData(void)
 				break;
 			}
 		}
-		g_stage_data[stage_no].length = tile_no;
+		g_stage_data[stage_no].num_tile = tile_no;
+		g_stage_data[stage_no].lane_length = tile_no * OBSTACLE_WIDTH;
 	}
 
 	// ファイルクローズ
@@ -328,23 +349,28 @@ void ReadStageData(void)
 
 void SetStageData(STAGE stage)
 {
-	for (int i = 0; i < g_stage_data[stage].length; i++)
+	for (int player_no = 0; player_no < NumPlayer(); player_no++)
 	{
-		g_stage_data[stage].tile;
+
+		for (int i = 0; i < g_stage_data[stage].num_tile; i++)
+		{
+			g_stage_data[stage].tile;
+		}
 	}
 }
 
 void SetObstacle(STAGE stage)
 {
-	for (int tile_no = 0; tile_no < g_stage_data[stage].length; tile_no++) {
+	for (int tile_no = 0; tile_no < g_stage_data[stage].num_tile; tile_no++) {
 		for (int player_no = 0; player_no < NumPlayer(); player_no++) {
 			char tile = g_stage_data[stage].tile[tile_no];
-			int length = g_stage_data[stage].length;
+			int length = g_stage_data[stage].num_tile;
 			if (tile == CHAR_SPACE)
 				continue;
 
 			OBSTACLE obstacle;
 			obstacle.use = true;
+			obstacle.should_give_skillpoint = true;
 			obstacle.lane_no = player_no;
 			obstacle.pos = D3DXVECTOR3((length - tile_no) * -OBSTACLE_WIDTH + OBSTACLE_PADDING, LANE_Y(player_no), LANE_Z(player_no));
 			obstacle.move = OBSTACLE_DEFAULT_MOVE;

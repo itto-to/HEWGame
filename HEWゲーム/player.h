@@ -87,5 +87,6 @@ D3DXVECTOR3 GetRotationPlayer(void);
 D3DXVECTOR3 GetRotationDestPlayer(void);
 D3DXVECTOR3 GetMovePlayer(void);
 int NumPlayer(void);
+void IncreaseSkillpoint(int player_no);
 
 #endif
