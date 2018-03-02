@@ -90,6 +90,9 @@
     <ClInclude Include="player_behavior.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="drawresult.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bullet.cpp">
@@ -165,6 +168,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="player_behavior.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="drawresult.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
