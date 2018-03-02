@@ -9,6 +9,7 @@
 // インクルードファイル
 //***************************************************************
 #include "skill.h"
+#include <time.h>
 
 //***************************************************************
 // マクロ定義
@@ -42,8 +43,9 @@ int skill_count_winner(void);
 //***************************************************************
 // グローバル変数
 //***************************************************************
-SKILL skillWk;			// スキル構造体
+SKILL skillWk;							// スキル構造体
 SKILL_FLAG skill_flag[MAX_PLAYER];
+bool skillcheck_ok;						// スキル発動の権利を持っているプレイヤーが1人かどうか
 //***************************************************************
 // 関数名:		HRESULT InitSkill(void)
 // 引数:		なし
@@ -75,6 +77,9 @@ HRESULT InitSkill(void)
 		skill_flag[no].get = false;
 		skill_flag[no].count = 0;
 	}
+
+	// まだ権限は割り振られていない
+	skillWk.kengen = false;
 
 	return S_OK;
 
@@ -124,9 +129,11 @@ void UninitSkill(void)
 //****************************************************************
 void UpdateSkill(float gageup)
 {
+	int skillget_count = 0;
 	PLAYER *player = GetPlayer(0);
+	skillcheck_ok = true;					// スキルの発動権利を持っているプレイヤーは1人かどうか
 
-	// スキルゲージ上昇
+											// スキルゲージ上昇
 	skillWk.gage += gageup;
 
 	// もしゲージが一定以上貯まっていたなら
@@ -136,16 +143,38 @@ void UpdateSkill(float gageup)
 		skillWk.gage = 0.0f;		// 値を初期化
 	}
 
-	// skillpointが5になっているプレイヤー全員に権限を付与
-	for(int i = 0; i < MAX_PLAYER; i++)
+	// もし権限がまだ誰にも割り当てられていない場合
+	// 権限を決める
+
+	if(skillWk.kengen == false)
 	{
-		if(player[i].skillpoint >= 5)
+
+		// skillpointが5になっているプレイヤーの人数を確認
+		for(int i = 0; i < MAX_PLAYER; i++)
 		{
-			player[i].kengen = true;
+			if(player[i].skillpoint >= 5)
+			{
+				player[i].kengen = true;
+				skillget_count++;
+			}
+			else
+			{
+				player[i].kengen = false;
+			}
+
+		}
+		// 2人以上が権限を持っている場合、条件判定へ移動
+		if(skillget_count >= 2)
+		{
+			skillcheck_ok = false;			// 権利の所有者は1人だけではない
+			GetSkill(0);
+		}
+
+		else
+		{
+			skillWk.kengen = true;
 		}
 	}
-	// 優先順位決定
-	GetSkill(0);
 
 }
 
@@ -279,47 +308,62 @@ void SetColorSkill(void)
 // 関数名:	void GetSkill(no)
 // 引数:	5回飛んだプレイヤーの番号
 // 戻り値:
-// 説明:	条件を満たしているプレイヤーのうち、誰に権限を与えるか決定
+// 説明:	updateskillで権限を持っているプレイヤーが2人以上の場合実行される
+//			条件を満たしているプレイヤーのうち、誰に権限を与えるか決定
 //*****************************************************************************
 void GetSkill(int no)
 {
-	// プレイヤーのポインター初期化！
 	PLAYER *player = GetPlayer(0);
-	int old_getskill;				// 直前に権限を持っているプレイヤー
-	int skill_gets;					// スキルを入手した人の番号
-	int skill_life_lower;					// 体力が１番少ないプレイヤーの番号
-	int skill_count_lower;					// 発動回数が1番少ないプレイヤーの番号
+	int skill_life_lower;
+	int skill_count_lower;
+	int counts = 0;
+	srand((unsigned)time(NULL));
+	int unmakase;
 
+	// 同時に2人以上が条件を満たしていたら下記の判定
 
-											// 5回飛んだプレイヤーが全員権限を持っている
+	// ライフが少ない人
+	skill_life_lower = skillsort_life();
 
-											// 権限を持っているプレイヤーの番号を取得し
-											// 権限を無効化
-	for(int no = 0; no < MAX_PLAYER; no++)
+	// 上記判定後も権利所有者が2人以上いた場合の処理
+	if(skillcheck_ok == false)
 	{
-		if(player[no].kengen == true)
+		// 権限を持った人が一番少ない順番
+		skill_count_lower = skill_count_winner();
+	}
+	else
+	{
+		skillWk.kengen = true;
+	}
+
+
+	// それでも駄目な場合の処理
+
+	if(skillcheck_ok == false)
+	{
+		while(0)
 		{
-			skill_flag[no].get = true;
-			player[no].kengen == false;
+			srand((unsigned)time(NULL));
+			unmakase = rand() % MAX_PLAYER;			// 適当なとこから開始
+			if(player[unmakase].kengen == true)
+			{
+				break;
+				skillcheck_ok = true;
+				skillWk.kengen = true;
+			}
 		}
-		else
+
+		// それ以外のプレイヤーは権限はく奪
+		for(int i = 0; i < MAX_PLAYER; i++)
 		{
-			skill_flag[no].get = false;
+			if(player[i].kengen == true && i != unmakase)
+			{
+				player[i].kengen = false;
+			}
 		}
 	}
 
 
-
-
-	// ライフが少ない人
-	skill_life_lower = skillsort_life();
-	// 権限を持った人が一番少ない順番
-	skill_count_lower = skill_count_winner();
-	// 権限割り当て
-	/*
-	player[no].kengen =true
-	skill_flag[no].count++;
-	*/
 
 }
 
@@ -334,16 +378,25 @@ int skillsort_life(void)
 {
 	PLAYER *player = GetPlayer(0);
 	int winner = 0;					// 勝者の番号
+	bool sort_life = true;			// この方法でプレイヤーを一人に絞れたか　
 
 									// 今はライフが同じ場合、番号が若いプレイヤーが権利を得る
 
 	for(int no = 1; no < MAX_PLAYER; no++)
 	{
+		// 御互いの体力が同じ場合
+		if(player[winner].life == player[no].life)
+		{
+			sort_life = false;
+		}
+
 		// 現在の勝者の体力より少ない人がでたら
 		if(player[winner].life > player[no].life)
 		{
-			winner = no;								// 権利を譲る
+			player[winner].kengen = false;				// 権限を失い
+			winner = no;								// その人をwinnerに
 		}
+
 
 	}
 
@@ -358,12 +411,34 @@ int skillsort_life(void)
 //******************************************************************
 int skill_count_winner(void)
 {
+	PLAYER *player = GetPlayer(0);
 	int count_winner = 0;				// 0番目から比較開始
+	int shaka = 0;						// 権限持ちを探すときに使う関数
+	skillcheck_ok = true;				// 抜けられると仮定
+
+										// 若い順から見ていって権限を持っているプレイヤーを探す
+	while(shaka = 0)
+	{
+		if(player[count_winner].kengen == false)
+		{
+			count_winner++;
+		}
+		else
+		{
+			shaka++;
+		}
+	}
+
 	for(int i = 1; i < MAX_PLAYER; i++)	// 0番目と1番目から比較開始
 	{
-		if(skill_flag[count_winner].count > skill_flag[i].count)
+		if(skill_flag[count_winner].count == skill_flag[i].count)
+		{
+			skillcheck_ok = false;			// 2人以上いる！
+		}
+		else if(skill_flag[count_winner].count > skill_flag[i].count)
 		{// 自分よりも小さい値が見つかった
-			count_winner = i;
+			player[count_winner].kengen = false;		// 権限をはく奪して
+			count_winner = i;							// 勝者を残す
 		}
 	}
 	return count_winner;
@@ -380,6 +455,10 @@ void SkillReset(int no)
 	player[no].skillpoint = 0;
 }
 
+//**********************************************************************
+// 関数名:	void GetWinner(void)
+// 引数:	なし
+// 
 
 //*******************************************************************
 // メモ書き！
