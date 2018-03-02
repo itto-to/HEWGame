@@ -165,16 +165,21 @@ void CheckHitPlayerObstacle(void)
 		BOUNDING_BOX playerBox = ToWorldBoundingBox(player->hit_box, player->pos);
 
 		// 障害物のバウンディングボックス取得
-		OBSTACLE *obstacle = GetObstacle();
-		BOUNDING_BOX obstacleBox = ToWorldBoundingBox(obstacle->hit_box, obstacle->pos);
-
-		if (IsIntersectedBoundingBox(playerBox, obstacleBox))
+		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++)
 		{
-			// プレイヤーのライフ減少
-			player->life--;
-			// 無敵状態に
-			player->is_invincible = true;
-			player->invincible_counter = 0;
+			OBSTACLE *obstacle = GetObstacle(player_no, obstacle_no);
+			
+
+			BOUNDING_BOX obstacleBox = ToWorldBoundingBox(obstacle->hit_box, obstacle->pos);
+
+			if (IsIntersectedBoundingBox(playerBox, obstacleBox))
+			{
+				// プレイヤーのライフ減少
+				player->life--;
+				// 無敵状態に
+				player->is_invincible = true;
+				player->invincible_counter = 0;
+			}
 		}
 	}
 }

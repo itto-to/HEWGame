@@ -15,7 +15,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAX_LANE_DATA	(512)
+#define MAX_LANE_DATA		(512)
+#define MAX_NUM_OBSTACLE	(256)
 
 //*****************************************************************************
 // 列挙体宣言
@@ -50,6 +51,7 @@ typedef struct {
 } STAGE_DATA;
 
 typedef struct {
+	bool use;						// 使用しているかどうか
 	int lane_no;					// 所属するレーンの番号
 	STAGE stage;					// 所属するステージ
 	OBSTACLE_TYPE obstacle_type;	// 障害物のタイプ
@@ -60,7 +62,7 @@ typedef struct {
 	D3DXVECTOR3 pos;				// 現在の位置
 	D3DXVECTOR3 move;				// 移動量
 	D3DXVECTOR3 rot;				// 現在の向き
-	D3DXVECTOR3 rotDest;			// 目的の向き
+	D3DXVECTOR3 rot_dest;			// 目的の向き
 } OBSTACLE;
 
 
@@ -71,7 +73,7 @@ HRESULT InitStage(void);
 void UninitStage(void);
 void UpdateStage(void);
 void DrawStage(void);
-OBSTACLE *GetObstacle(void);
+OBSTACLE *GetObstacle(int lane_no, int obstacle_no);
 LANE *GetLane(int no);
 
 #endif
