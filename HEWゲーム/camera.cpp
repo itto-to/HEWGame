@@ -150,6 +150,7 @@ void SetCamera(void)
 
 
 	// プロジェクションマトリックスの初期化
+	//D3DXMatrixLookAtLH(&camera->mtxProjection, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &D3DXVECTOR3(-1.0f, -1.0f, -1.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	D3DXMatrixOrthoLH(&camera->mtxProjection, SCREEN_WIDTH, SCREEN_HEIGHT, VIEW_NEAR_Z, VIEW_FAR_Z);
 
 	// プロジェクションマトリックスの設定

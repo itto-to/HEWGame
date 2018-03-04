@@ -19,6 +19,16 @@
 //*****************************************************************************
 #define SLIDING_COUNT	(20.0f)
 
+#define BUTTON_JUMP			(BUTTON_A)
+#define BUTTON_LARGEJUMP	(BUTTON_C)
+#define BUTTON_DASH			(BUTTON_A)
+#define BUTTON_SLIDING		(BUTTON_DOWN)
+
+#define KEY_JUMP			(DIK_Z)
+#define KEY_LARGEJUMP		(DIK_X)
+#define KEY_DASH			(DIK_Z)
+#define KEY_SLIDING			(DIK_DOWN)
+
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -50,6 +60,9 @@ void ChangePlayerState(PLAYER *player)
 void EnterPlayerState(PLAYER *player) {
 	switch (player->state)
 	{
+	case PLAYER_STARTDASH:
+		EnterPlayerStartDash(player);
+		break;
 	case PLAYER_ONGROUND:
 		EnterPlayerOnGround(player);
 		break;
@@ -71,6 +84,9 @@ void EnterPlayerState(PLAYER *player) {
 void ExitPlayerState(PLAYER *player) {
 	switch (player->state)
 	{
+	case PLAYER_STARTDASH:
+		ExitPlayerStartDash(player);
+		break;
 	case PLAYER_ONGROUND:
 		ExitPlayerOnGround(player);
 		break;
@@ -91,20 +107,35 @@ void ExitPlayerState(PLAYER *player) {
 
 
 
+void UpdatePlayerStartDash(PLAYER * player)
+{
+
+	if (IsButtonTriggered(player->lane_no, BUTTON_DASH) || GetKeyboardTrigger(KEY_DASH))
+	{
+		player->dash_gauge += 1.0f;
+	}
+
+	// ゲーム開始
+	if (GetStageState() == STAGE_STATE_GAMEPLAY)
+	{
+		player->next_state = PLAYER_ONGROUND;
+	}
+}
+
 void UpdatePlayerOnGround(PLAYER *player)
 {
 	// ジャンプ処理
-	if (IsButtonTriggered(player->lane_no, BUTTON_A) || GetKeyboardTrigger(DIK_Z))
+	if (IsButtonTriggered(player->lane_no, BUTTON_JUMP) || GetKeyboardTrigger(KEY_JUMP))
 	{
 		player->jump_speed = PLAYER_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
 	}
-	else if (IsButtonTriggered(player->lane_no, BUTTON_C) || GetKeyboardTrigger(DIK_X))
+	else if (IsButtonTriggered(player->lane_no, BUTTON_LARGEJUMP) || GetKeyboardTrigger(KEY_LARGEJUMP))
 	{
 		player->jump_speed = PLAYER_LARGE_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
 	}
-	else if (IsButtonTriggered(player->lane_no, BUTTON_DOWN) || GetKeyboardTrigger(DIK_DOWN))	// スライディング処理
+	else if (IsButtonTriggered(player->lane_no, BUTTON_SLIDING) || GetKeyboardTrigger(KEY_SLIDING))	// スライディング処理
 	{
 		player->next_state = PLAYER_SLIDING;
 	}
@@ -145,6 +176,11 @@ void UpdatePlayerDead(PLAYER *player)
 	player->rot.z -= 0.05f;
 }
 
+void EnterPlayerStartDash(PLAYER * player)
+{
+
+}
+
 void EnterPlayerOnGround(PLAYER *player)
 {
 	
@@ -166,6 +202,11 @@ void EnterPlayerDead(PLAYER *player)
 
 }
 
+void ExitPlayerStartDash(PLAYER * player)
+{
+
+}
+
 void ExitPlayerOnGround(PLAYER *player)
 {
 
@@ -179,8 +220,7 @@ void ExitPlayerJump(PLAYER *player)
 void ExitPlayerSliding(PLAYER *player)
 {
 	// 当たり判定を元に戻す
-	player->hit_box.max = PLAYER_BB_MAX;
-	player->hit_box.min = PLAYER_BB_MIN;
+	player->hit_box = PLAYER_HIT_BOX;
 }
 
 void ExitPlayerDead(PLAYER *player)

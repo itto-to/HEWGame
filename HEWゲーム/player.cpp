@@ -22,10 +22,14 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
+#define BUTTON_SKILL				(BUTTON_C)	// スキル発動ボタン
+#define KEY_SKILL					(DIK_C)		// スキル発動キー
+
 #define TEXTURE_PLAYER_KNIGHT		"data/TEXTURE/player_knight.png"	// 騎士テクスチャ名
 #define TEXTURE_PLAYER_THIEF		"data/TEXTURE/player_thief.png"		// 盗賊テクスチャ名
 #define TEXTURE_PLAYER_COOK			"data/TEXTURE/player_cook.png"		// 料理人テクスチャ名
 #define TEXTURE_PLAYER_WIZARD		"data/TEXTURE/player_wizard.png"	// 魔法使いテクスチャ名
+#define TEXTURE_DASH_GAUGE			"data/TEXTURE/lifegreen.png"		// ダッシュゲージテクスチャ名
 
 #define PLAYER_POS_X		(400.0f)					// プレイヤーのX座標
 #define	PLAYER_PADDING		(-100.0f)					// プレイヤー同士の間隔
@@ -37,6 +41,11 @@
 #define GRAVITY_ACCELARATION (-0.5f)					// 重力加速度
 #define MAX_LIFE			(3)							// 最大体力
 #define INVINCIBLE_FRAME	(100)						// 敵と当たった後の無敵フレーム
+
+#define OFFSET_DASH_GAUGE		(D3DXVECTOR3(0.0f, 100.0f, 0.0f))	// ダッシュゲージのプレイヤーからの相対座標
+#define MAX_DASH_GAUGE			(16.0f)		// ダッシュゲージの最大値
+#define DASH_GAUGE_HEIGHT		(20.0f)		// ダッシュゲージの高さ
+#define MAX_DASH_GAUGE_WIDTH	(100.0f)	// ダッシュゲージの最大幅
 
 
 //*****************************************************************************
@@ -51,6 +60,9 @@ HRESULT MakeVertexPlayer(LPDIRECT3DDEVICE9 pDevice, PLAYER *player);
 LPDIRECT3DTEXTURE9	g_pD3DTextureKnight;		// テクスチャ読み込み場所
 int					g_num_player;				// プレイヤーの人数
 PLAYER				g_playerWk[MAX_PLAYER];		// プレイヤーワーク
+
+LPDIRECT3DVERTEXBUFFER9 g_vtx_dash_gauge;
+LPDIRECT3DTEXTURE9 g_texture_dash_gauge;
 
 char *player_textureFileName[MAX_PLAYER] =
 {
@@ -83,19 +95,19 @@ HRESULT InitPlayer(void)
 		g_playerWk[no].scl     = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 		g_playerWk[no].ground  = g_playerWk[no].pos.y;
 		g_playerWk[no].life    = MAX_LIFE;
-		g_playerWk[no].state   = PLAYER_ONGROUND;
+		g_playerWk[no].state   = PLAYER_STARTDASH;
 		g_playerWk[no].speed_factor = 1.0f;
+		g_playerWk[no].dash_gauge = 0.0f;
 		
 		// 当たり判定初期化
-		g_playerWk[no].hit_box.max = PLAYER_BB_MAX;
-		g_playerWk[no].hit_box.min = PLAYER_BB_MIN;
+		g_playerWk[no].hit_box = PLAYER_HIT_BOX;
 
 		// 画面外判定用バウンディングボックス初期化
 		// 画面外判定初期化
 		InitBoundingBox(&g_playerWk[no].screen_box, D3DXVECTOR3(0.0f, 0.0f, 0.0f), PLAYER_WIDTH, PLAYER_HEIGHT, 0.0f);
 
 		// 頂点作成
-		MakeVertex(pDevice, &g_playerWk[no].vtx, PLAYER_WIDTH, PLAYER_HEIGHT);
+		MakeVertex(pDevice, &g_playerWk[no].vtx, &D3DXVECTOR3(0.0f, PLAYER_HEIGHT / 2.0f, 0.0f), PLAYER_WIDTH, PLAYER_HEIGHT);
 	}
 
 	// テクスチャの読み込み
@@ -111,6 +123,12 @@ HRESULT InitPlayer(void)
 	D3DXCreateTextureFromFile(pDevice,	// デバイスへのポインタ
 		TEXTURE_PLAYER_COOK,			// ファイルの名前
 		&g_playerWk[COOK].texture);		// 読み込むメモリー
+
+	// ダッシュゲージの頂点作成
+	MakeVertex(pDevice, &g_vtx_dash_gauge, &D3DXVECTOR3(MAX_DASH_GAUGE_WIDTH / MAX_DASH_GAUGE / 2, 0.0f, 0.0f), MAX_DASH_GAUGE_WIDTH / MAX_DASH_GAUGE, DASH_GAUGE_HEIGHT);
+	D3DXCreateTextureFromFile(pDevice,	// デバイスへのポインタ
+		TEXTURE_DASH_GAUGE,			// ファイルの名前
+		&g_texture_dash_gauge);		// 読み込むメモリー
 
 	return S_OK;
 }
@@ -128,6 +146,9 @@ void UninitPlayer(void)
 		// メッシュの開放
 		SAFE_RELEASE(g_playerWk[no].vtx);
 	}
+
+	SAFE_RELEASE(g_vtx_dash_gauge);
+	SAFE_RELEASE(g_texture_dash_gauge);
 }
 
 //=============================================================================
@@ -137,9 +158,12 @@ void UpdatePlayer(void)
 {
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
-		PLAYER_STATE next_state;
 		switch (g_playerWk[no].state)
 		{
+		case PLAYER_STARTDASH:
+			UpdatePlayerStartDash(&g_playerWk[no]);
+			break;
+
 		case PLAYER_ONGROUND:
 			UpdatePlayerOnGround(&g_playerWk[no]);
 			break;
@@ -161,24 +185,38 @@ void UpdatePlayer(void)
 		}
 
 #ifdef _DEBUG
-		if (GetKeyboardPress(DIK_DOWN)) {
-			for (int i = 0; i < MAX_PLAYER; i++)
-			{
-				g_playerWk[i].pos.y -= 1.0f;
-				g_playerWk[i].ground -= 1.0f;
-			}
-		}
-		if (GetKeyboardPress(DIK_UP)) {
-			for (int i = 0; i < MAX_PLAYER; i++)
-			{
-				g_playerWk[i].pos.y += 1.0f;
-				g_playerWk[i].ground += 1.0f;
-			}
-		}
+		//for (int i = 0; i < MAX_PLAYER; i++)
+		//{
+		//	if (GetKeyboardPress(DIK_DOWN)) {
+
+		//		g_playerWk[i].pos.y -= 1.0f;
+		//		g_playerWk[i].ground -= 1.0f;
+		//	}
+		//	if (GetKeyboardPress(DIK_UP)) {
+		//		g_playerWk[i].pos.y += 1.0f;
+		//		g_playerWk[i].ground += 1.0f;
+
+		//	}
+		//}
+
+		//float interval = g_playerWk[0].pos.y - g_playerWk[1].pos.y;
+		//for (int i = 1; i < MAX_PLAYER; i++)
+		//{
+		//	if (GetKeyboardPress(DIK_W))
+		//	{
+		//		g_playerWk[i].pos.y = g_playerWk[i - 1].pos.y - interval - 1.0f;
+		//		g_playerWk[i].ground = g_playerWk[i].pos.y;
+		//	}
+		//	if (GetKeyboardPress(DIK_N))
+		//	{
+		//		g_playerWk[i].pos.y = g_playerWk[i - 1].pos.y - interval + 1.0f;
+		//		g_playerWk[i].ground = g_playerWk[i].pos.y;
+		//	}
+		//}
 #endif
 
 		// スキル発動
-		if (IsButtonTriggered(no, BUTTON_C) || GetKeyboardTrigger(DIK_C)) {
+		if (IsButtonTriggered(no, BUTTON_SKILL) || GetKeyboardTrigger(KEY_SKILL)) {
 			// TODO:スキル発動処理を書く
 
 		}
@@ -215,12 +253,20 @@ void DrawPlayer(void)
 
 	for (int no = 0; no < MAX_PLAYER; no++)
 	{
+		PLAYER *player = &g_playerWk[no];
 
-		// 描画
+		// プレイヤー描画
 		if (!g_playerWk[no].is_invincible || ((g_playerWk[no].invincible_counter % 10) > 4))
 		{
 			DrawMesh(g_playerWk[no].vtx, g_playerWk[no].texture, g_playerWk[no].pos, g_playerWk[no].rot, g_playerWk[no].scl);
 		}
+
+		// スタート時のゲージ描画
+		if (g_playerWk[no].state == PLAYER_STARTDASH)
+		{
+			DrawMesh(g_vtx_dash_gauge, g_texture_dash_gauge, player->pos + OFFSET_DASH_GAUGE, player->rot, D3DXVECTOR3(player->dash_gauge, 1.0f, 1.0f));
+		}
+
 
 #ifdef _DEBUG
 		// バウンディングボックスを描画
@@ -233,6 +279,7 @@ void DrawPlayer(void)
 		PrintDebugProc("座標 X：%f Y:%f Z:%f\n", pos.x, pos.y, pos.z);
 		PrintDebugProc("ライフ : %d\n", g_playerWk[no].life);
 		PrintDebugProc("スキルポイント : %d \n", g_playerWk[no].skillpoint);
+		PrintDebugProc("ダッシュゲージ : %f \n", g_playerWk[no].dash_gauge);
 
 		switch (g_playerWk[no].state)
 		{
@@ -372,4 +419,44 @@ int NumPlayer(void)
 void IncreaseSkillpoint(int player_no)
 {
 	g_playerWk[player_no].skillpoint++;
+}
+
+//******************************************************************************
+// 関数名:	int MaxLife(void)
+// 引数:	void
+// 戻り値:	void
+// 説明:	ライフの最大値
+//******************************************************************************
+int MaxLife(void)
+{
+	return MAX_LIFE;
+}
+
+//******************************************************************************
+// 関数名:	bool IsDashGaugeFull(int player_no)
+// 引数:	int player_no
+// 戻り値:	bool
+// 説明:	player_noで指定したプレイヤーのダッシュゲージが満タンならtrueを返す
+//******************************************************************************
+bool IsDashGaugeFull(int player_no)
+{
+	return g_playerWk[player_no].dash_gauge >= MAX_DASH_GAUGE;
+}
+
+//******************************************************************************
+// 関数名:	bool AllPlayersDead(void)
+// 引数:	なし
+// 戻り値:	bool
+// 説明:	すべてのプレイヤーが死んでいたらtrueを返す
+//******************************************************************************
+bool AllPlayersDead(void)
+{
+	for (int player_no = 0; player_no < g_num_player; player_no++)
+	{
+		if (g_playerWk[player_no].state != PLAYER_DEAD)
+		{
+			return false;
+		}
+	}
+	return true;
 }

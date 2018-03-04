@@ -14,10 +14,9 @@
 //***************************************************************
 // マクロ定義
 //***************************************************************
-#define SKILL_WAKU		"data/TEXTURE/hpback.png"		// スキルゲージ
-#define SKILL_BAR		"data/TEXTURE/hpgreen.png"		// スキルゲージのバー
+#define SKILL_WAKU		"data/TEXTURE/skill_frame.png"		// スキルゲージ
+#define SKILL_BAR		"data/TEXTURE/lifegreen.png"		// スキルゲージのバー
 //#define SKILL_BAR2
-
 
 
 // ゲージの枠部分
@@ -25,8 +24,8 @@
 #define SKILLGAGE_POS_X	(10.0f)
 #define SKILLGAGE_POS_Y	(10.0f)
 // 長さ
-#define SKILLGAGE_WIDTH	(200.0f)
-#define SKILLGAGE_HEIGHT	(100.0f)
+#define SKILLGAGE_WIDTH	(469.0f)
+#define SKILLGAGE_HEIGHT	(98.0f)
 
 // ゲージのバーの部分
 // 位置
@@ -34,7 +33,7 @@
 #define SKILLBAR_POS_Y	(SKILLGAGE_POS_Y + 0.0f )
 // 長さ
 #define SKILLBAR_WIDTH	(180.0f)
-#define SKILLBAR_HEIGHT	(90.0f)
+#define SKILLBAR_HEIGHT	(40.0f)
 
 // その他ゲージ関連
 #define SKILL_LEVELUP	(5)			// レベルアップに必要な値
@@ -69,12 +68,12 @@ HRESULT InitSkill(void)
 
 	// ゲージ
 	D3DXCreateTextureFromFile(pDevice,
-		SKILL_WAKU,							// ファイルの名前
+		SKILL_BAR,							// ファイルの名前
 		&skillWk.Texture_bar);
 
 	// ゲージの枠
 	D3DXCreateTextureFromFile(pDevice,
-		SKILL_BAR,
+		SKILL_WAKU,
 		&skillWk.Texture_waku);
 
 	// フラグ初期化
@@ -141,7 +140,7 @@ void UpdateSkill(float gageup)
 	PLAYER *player = GetPlayer(0);
 	skillcheck_ok = true;					// スキルの発動権利を持っているプレイヤーは1人かどうか
 
-											// スキルゲージ上昇
+	// スキルゲージ上昇
 	skillWk.gage += gageup;
 
 	// もしゲージが一定以上貯まっていたなら
@@ -156,7 +155,6 @@ void UpdateSkill(float gageup)
 
 	if(skillWk.kengen == false)
 	{
-
 		// skillpointが5になっているプレイヤーの人数を確認
 		for(int i = 0; i < MAX_PLAYER; i++)
 		{
@@ -177,7 +175,6 @@ void UpdateSkill(float gageup)
 			skillcheck_ok = false;			// 権利の所有者は1人だけではない
 			GetSkill(0);
 		}
-
 		else
 		{
 			skillWk.kengen = true;
@@ -282,6 +279,53 @@ HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice)
 		skillWk.Buff_waku->Unlock();
 	}
 
+	// スキルバーのバッファ作成
+	if (FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用、確保するバッファのサイズ
+		D3DUSAGE_WRITEONLY,		// 使用法
+		FVF_VERTEX_2D,				// 頂点フォーマット
+		D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラス
+		&skillWk.Buff_bar,			// 頂点バッファインタフェースへのポインタ
+		NULL)))						// NULLに設定
+	{
+		return E_FAIL;
+	}
+
+	// 頂点バッファの中身を埋める
+	{
+		VERTEX_2D *pVtx;
+
+		// 頂点データの範囲をロック＆ポインタを取得
+		skillWk.Buff_bar->Lock(0, 0, (void**)&pVtx, 0);
+
+		// 頂点座標の設定
+		pVtx[0].vtx = D3DXVECTOR3(SKILLBAR_POS_X, SKILLBAR_POS_Y, 0.0f);
+		pVtx[1].vtx = D3DXVECTOR3(SKILLBAR_POS_X + SKILLBAR_WIDTH, SKILLBAR_POS_Y, 0.0f);
+		pVtx[2].vtx = D3DXVECTOR3(SKILLBAR_POS_X, SKILLBAR_POS_Y + SKILLBAR_HEIGHT, 0.0f);
+		pVtx[3].vtx = D3DXVECTOR3(SKILLBAR_POS_X + SKILLBAR_WIDTH, SKILLBAR_POS_Y + SKILLBAR_HEIGHT, 0.0f);
+
+		// テクスチャのパースペクティブコレクト用
+		pVtx[0].rhw =
+			pVtx[1].rhw =
+			pVtx[2].rhw =
+			pVtx[3].rhw = 1.0f;
+
+		// 反射光の設定
+		pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+
+		// テクスチャ座標の設定
+		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+		pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+
+		// 頂点データをアンロック
+		skillWk.Buff_bar->Unlock();
+	}
+
+
 	return S_OK;
 }
 
@@ -346,7 +390,6 @@ void GetSkill(int no)
 
 
 	// それでも駄目な場合の処理
-
 	if(skillcheck_ok == false)
 	{
 		while(0)

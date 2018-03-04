@@ -8,6 +8,8 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "input.h"
 #include "camera.h"
@@ -37,40 +39,56 @@
 #define TEXTURE_SNOW_LARGEJUMP "data/TEXTURE/スノーマン_雪_大ジャンプ.png"
 #define TEXTURE_SNOW_SLIDING   "data/TEXTURE/雪玉_雪_スライディング.png"
 
+#define TEXTURE_LANE			"data/TEXTURE/stage_lane.png"
+#define LANE_WIDTH				(120.0f)
+#define LANE_HEIGHT				(10.f)
+#define LANE_INTERVAL			(LANE_WIDTH * 0.8)
+#define NUM_DRAW_LANE			(20)
+
 #define JUMP_OVER_DECISION_POS_X	(400.0f)
 
 #define OBSTACLE_WIDTH	(100.0f)
 #define OBSTACLE_HEIGHT	(100.0f)
-#define OBSTACLE_DEFAULT_MOVE	(D3DXVECTOR3(10.0f, 0.0f, 0.0f))
-#define OBSTACLE_PADDING	(SCREEN_WIDTH)
+#define OBSTACLE_DEFAULT_VELOCITY	(D3DXVECTOR3(5.0f, 0.0f, 0.0f))
+#define OBSTACLE_PADDING	(-SCREEN_WIDTH)
 
-#define OBSTACLE_SCREEN_BOX	{D3DXVECTOR3(-OBSTACLE_WIDTH / 2, -OBSTACLE_HEIGHT / 2, 0.0f), D3DXVECTOR3(OBSTACLE_WIDTH / 2, OBSTACLE_HEIGHT / 2, 0.0f)}
-#define OBSTACLE_JUMP_HIT_BOX	{D3DXVECTOR3(-OBSTACLE_WIDTH / 2, -OBSTACLE_HEIGHT / 2, 0.0f), D3DXVECTOR3(OBSTACLE_WIDTH / 2, OBSTACLE_HEIGHT / 2, 0.0f)}
+#define OBSTACLE_SCREEN_BOX			{D3DXVECTOR3(-OBSTACLE_WIDTH / 2, 0.0f, 0.0f), D3DXVECTOR3(OBSTACLE_WIDTH / 2, OBSTACLE_HEIGHT, 0.0f)}
+#define OBSTACLE_JUMP_HIT_BOX		{D3DXVECTOR3(-20.0f,  0.0f, 0.0f), D3DXVECTOR3(20.0f,  25.0f, 0.0f)}
+#define OBSTACLE_LARGEJUMP_HIT_BOX	{D3DXVECTOR3(-20.0f,  0.0f, 0.0f), D3DXVECTOR3(20.0f,  70.0f, 0.0f)}
+#define OBSTACLE_SLIDING_HIT_BOX	{D3DXVECTOR3(-20.0f, 50.0f, 0.0f), D3DXVECTOR3(20.0f, 100.0f, 0.0f)}
 
 #define CHAR_SPACE		('0')
 #define CHAR_JUMP		('1')
 #define CHAR_LARGEJUMP	('2')
 #define CHAR_SLIDING	('3')
 
+#define MAX_STAGE_COUNT			(10 * 60)	// ステージが変わるまでのカウント
+
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
+void UpdateStageGameplay(void);
+void UpdateStageStartDash(void);
+void DrawLane(void);
 void DrawObstacle(OBSTACLE *obstacle);
 void ReadStageData(void);
-void SetStageData(STAGE stage);
-void SetObstacle(STAGE stage);
+void SetStageData(STAGE_TYPE stage);
+void SetStageObstacle(STAGE_TYPE stage);
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-
-STAGE g_stage;		// 現在のステージ
+STAGE_STATE g_stage_state;	// 現在のステージ状態
+STAGE_TYPE g_stage_type;			// 現在のステージ
+int g_stage_count;			// 現在のステージのカウント
 LANE g_lane[MAX_PLAYER];
+LPDIRECT3DVERTEXBUFFER9 g_lane_vtx;
+LPDIRECT3DTEXTURE9 g_lane_tex;
 OBSTACLE g_obstacle[MAX_PLAYER][MAX_NUM_OBSTACLE];
 STAGE_DATA g_stage_data[STAGE_MAX];
 LPDIRECT3DTEXTURE9 g_bg_texture[STAGE_MAX][OBSTACLE_MAX];
-LPDIRECT3DVERTEXBUFFER9 g_vtx;
+LPDIRECT3DVERTEXBUFFER9 g_obstacle_vtx;
 
 
 HRESULT InitStage(void)
@@ -87,7 +105,7 @@ HRESULT InitStage(void)
 		{
 			char filename[MAX_PATH] = "data/TEXTURE/obstacle_";
 
-			switch ((STAGE)stage_no)
+			switch ((STAGE_TYPE)stage_no)
 			{
 			case STAGE_PLAIN:
 				strcat(filename, "plain_");
@@ -122,11 +140,23 @@ HRESULT InitStage(void)
 		}
 	}
 
+	if (FAILED(D3DXCreateTextureFromFile(pDevice, TEXTURE_LANE, &g_lane_tex)))
+	{
+		return E_FAIL;
+	}
+
 	// 頂点作成
-	MakeVertex(pDevice, &g_vtx, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+	MakeVertex(pDevice, &g_obstacle_vtx, &D3DXVECTOR3(0.0f, OBSTACLE_HEIGHT / 2.0f, 0.0f), OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+	MakeVertex(pDevice, &g_lane_vtx, NULL, LANE_WIDTH, LANE_HEIGHT);
+
+	// 最初はスタートダッシュから
+	g_stage_state = STAGE_STATE_STARTDASH;
 
 	// 最初は平原ステージから
-	g_stage = STAGE_VOLCANO;
+	g_stage_type = STAGE_PLAIN;
+
+	// ステージのカウントを0に
+	g_stage_count = 0;
 
 	// レーン初期化
 	for (int i = 0; i < MAX_PLAYER; i++)
@@ -136,7 +166,10 @@ HRESULT InitStage(void)
 	}
 
 	// ステージに合わせて障害物接地
-	SetObstacle(g_stage);
+	SetStageObstacle(g_stage_type);
+
+	// 乱数初期化
+	srand((unsigned int)time(NULL));
 
 	return S_OK;
 }
@@ -149,6 +182,10 @@ void UninitStage(void)
 			SAFE_RELEASE(g_obstacle[player_no][obstacle_no].texture);
 		}
 	}
+
+	SAFE_RELEASE(g_obstacle_vtx);
+	SAFE_RELEASE(g_lane_vtx);
+	SAFE_RELEASE(g_lane_tex);
 }
 
 void UpdateStage(void)
@@ -168,6 +205,53 @@ void UpdateStage(void)
 		PrintDebugProc("敵座標X：%f\n", g_obstacle[0][0].pos.x);
 	}
 #endif
+
+	if (g_stage_state == STAGE_STATE_GAMEPLAY)
+	{
+		UpdateStageGameplay();
+	}
+	else if (g_stage_state == STAGE_STATE_STARTDASH)
+	{
+		UpdateStageStartDash();
+	}
+}
+
+void UpdateStageStartDash(void)
+{
+	// ダッシュゲージが満タンのプレイヤー番号を記録する配列
+	int dashing_players[MAX_PLAYER];
+	int num_dashing_player = 0;
+
+	// ダッシュゲージを貯めきったプレイヤーがいたらゲーム開始
+	for (int player_no = 0; player_no < NumPlayer(); player_no++)
+	{
+		if (IsDashGaugeFull(player_no))
+		{
+			dashing_players[num_dashing_player] = player_no;	// ダッシュゲージが満タンのプレイヤー番号を記録
+			num_dashing_player++;							// ダッシュゲージが満タンの
+		}
+	}
+
+	if (num_dashing_player != 0)	// ダッシュゲージが満タンのプレイヤーがいたら
+	{
+		int skill_player_no = dashing_players[rand() % num_dashing_player];	// その中からランダムで決定
+		g_stage_state = STAGE_STATE_GAMEPLAY;
+	}
+}
+
+void UpdateStageGameplay(void)
+{
+	if (g_stage_count >= MAX_STAGE_COUNT)
+	{
+		g_stage_count = 0;	// ステージのカウントリセット
+
+		// 次のステージへ変更
+		g_stage_type = (STAGE_TYPE)((g_stage_type + 1) % STAGE_MAX);
+		SetStageObstacle(g_stage_type);
+	}
+
+	// ステージのカウント増加
+	g_stage_count++;
 
 	// 障害物の移動処理
 	for (int player_no = 0; player_no < NumPlayer(); player_no++)
@@ -196,21 +280,21 @@ void UpdateStage(void)
 		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++)
 		{
 			BOUNDING_BOX worldBox = ToWorldBoundingBox(g_obstacle[player_no][obstacle_no].hit_box, g_obstacle[player_no][obstacle_no].pos);
+			bool is_offscreen = IsObjectOffscreen(worldBox);	// 完全に画面外にあるならtrue
+
+			// 画面外にあり現在のステージに所属していないオブジェクトは消去
+			if (is_offscreen && (g_obstacle[player_no][obstacle_no].stage != g_stage_type))
+			{
+				g_obstacle[player_no][obstacle_no].use = false;
+			}
+
 			// 画面右外に出たか判定
-			if (IsObjectOffscreen(worldBox) && (g_obstacle[player_no][obstacle_no].pos.x > 0.0f))
-			{	
-				// 現在のステージと同じならリセット
-				if (g_obstacle[player_no][obstacle_no].stage == g_stage)
-				{
+			if (is_offscreen && (g_obstacle[player_no][obstacle_no].pos.x > 0.0f))
+			{
 					// レーンの長さ分戻す
-					g_obstacle[player_no][obstacle_no].pos.x -= g_stage_data[g_stage].lane_length;
+					g_obstacle[player_no][obstacle_no].pos.x -= g_stage_data[g_stage_type].lane_length;
 					// スキルポイントを与えられるように
 					g_obstacle[player_no][obstacle_no].should_give_skillpoint = true;
-				}
-				else // 現在のステージと違うなら消去
-				{
-					g_obstacle[player_no][obstacle_no].use = false;
-				}
 			}
 		}
 	}
@@ -218,6 +302,10 @@ void UpdateStage(void)
 
 void DrawStage(void)
 {
+	// レーン描画
+	DrawLane();
+
+	// 障害物描画
 	for (int player_no = 0; player_no < NumPlayer(); player_no++)
 	{
 		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++)
@@ -226,6 +314,18 @@ void DrawStage(void)
 				continue;
 
 			DrawObstacle(&g_obstacle[player_no][obstacle_no]);
+		}
+	}
+}
+
+void DrawLane(void)
+{
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
+	for (int player_no = 0; player_no < NumPlayer(); player_no++)
+	{
+		for (int lane = 0; lane < NUM_DRAW_LANE; lane++)
+		{
+			DrawMesh(g_lane_vtx, g_lane_tex, D3DXVECTOR3(-SCREEN_WIDTH / 2 + LANE_INTERVAL * lane, LANE_Y(player_no), LANE_Z(player_no)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
 		}
 	}
 }
@@ -347,7 +447,7 @@ void ReadStageData(void)
 	fclose(file);
 }
 
-void SetStageData(STAGE stage)
+void SetStageData(STAGE_TYPE stage)
 {
 	for (int player_no = 0; player_no < NumPlayer(); player_no++)
 	{
@@ -359,37 +459,41 @@ void SetStageData(STAGE stage)
 	}
 }
 
-void SetObstacle(STAGE stage)
+
+void SetStageObstacle(STAGE_TYPE stage)
 {
 	for (int tile_no = 0; tile_no < g_stage_data[stage].num_tile; tile_no++) {
 		for (int player_no = 0; player_no < NumPlayer(); player_no++) {
 			char tile = g_stage_data[stage].tile[tile_no];
-			int length = g_stage_data[stage].num_tile;
-			if (tile == CHAR_SPACE)
+			if (tile == CHAR_SPACE)	// スペースなら何も置かない
 				continue;
 
 			OBSTACLE obstacle;
+			int length = g_stage_data[stage].num_tile;
 			obstacle.use = true;
 			obstacle.should_give_skillpoint = true;
 			obstacle.lane_no = player_no;
 			obstacle.pos = D3DXVECTOR3((length - tile_no) * -OBSTACLE_WIDTH + OBSTACLE_PADDING, LANE_Y(player_no), LANE_Z(player_no));
-			obstacle.move = OBSTACLE_DEFAULT_MOVE;
+			obstacle.move = OBSTACLE_DEFAULT_VELOCITY;
 			obstacle.rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 			obstacle.rot_dest = obstacle.rot;
 			obstacle.stage = stage;
 			obstacle.screen_box = OBSTACLE_SCREEN_BOX;
 			obstacle.hit_box = OBSTACLE_JUMP_HIT_BOX;
-			obstacle.vtx = g_vtx;
+			obstacle.vtx = g_obstacle_vtx;
 
 			switch(tile) {
 			case CHAR_JUMP:
 				obstacle.texture = g_bg_texture[stage][OBSTACLE_JUMP];
+				obstacle.hit_box = OBSTACLE_JUMP_HIT_BOX;
 				break;
 			case CHAR_LARGEJUMP:
 				obstacle.texture = g_bg_texture[stage][OBSTACLE_LARGE_JUMP];
+				obstacle.hit_box = OBSTACLE_LARGEJUMP_HIT_BOX;
 				break;
 			case CHAR_SLIDING:
 				obstacle.texture = g_bg_texture[stage][OBSTACLE_SLIDING];
+				obstacle.hit_box = OBSTACLE_SLIDING_HIT_BOX;
 				break;
 			default:
 				assert(!"不正なキャラクター");
@@ -397,24 +501,30 @@ void SetObstacle(STAGE stage)
 			}
 
 			// 障害物セット
-			for (int i = 0; i < MAX_NUM_OBSTACLE; i++) {
-				if (!g_obstacle[player_no][i].use) {
+			for (int i = 0; i < MAX_NUM_OBSTACLE; i++)
+			{
+				if (!g_obstacle[player_no][i].use)
+				{
 					g_obstacle[player_no][i] = obstacle;
 					break;
 				}
-
 			}
 		}
 	}
 }
 
-void SetObstacleStatus(OBSTACLE *obstacle, D3DXVECTOR3 pos, STAGE stage, OBSTACLE_TYPE type)
+void SetObstacleStatus(OBSTACLE *obstacle, D3DXVECTOR3 pos, STAGE_TYPE stage, OBSTACLE_TYPE type)
 {
 
 }
 
 // 現在のステージを取得
-STAGE GetStage(void)
+STAGE_TYPE GetStage(void)
 {
-	return g_stage;
+	return g_stage_type;
+}
+
+STAGE_STATE GetStageState(void)
+{
+	return g_stage_state;
 }

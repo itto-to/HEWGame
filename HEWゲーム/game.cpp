@@ -61,6 +61,9 @@ HRESULT InitGame(void)
 	// スキルゲージの初期化
 	InitSkill();
 
+	// ライフの初期化
+	InitLife();
+
 	// BGM再生
 	PlaySound(SOUND_LABEL_BGM000);
 
@@ -91,6 +94,9 @@ void UninitGame(void)
 
 	// スキルゲージの終了処理
 	UninitSkill();
+
+	// ライフの終了処理
+	UninitLife();
 
 	// スコアの終了処理
 	UninitScore();

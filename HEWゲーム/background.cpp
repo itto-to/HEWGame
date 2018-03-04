@@ -50,14 +50,14 @@ HRESULT InitBackground()
 	g_background.pos = D3DXVECTOR3(0.0f, 0.0f, 100.0f);
 
 	// 頂点作成
-	MakeVertex(pDevice, &g_background.vtx, SCREEN_WIDTH, SCREEN_HEIGHT);
+	MakeVertex(pDevice, &g_background.vtx, NULL, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// テクスチャ作成
 	for (int stage_no = 0; stage_no < STAGE_MAX; stage_no++)
 	{
 		char texture_filename[MAX_PATH] = TEXTURE_PATH;
 
-		switch ((STAGE)stage_no)
+		switch ((STAGE_TYPE)stage_no)
 		{
 		case STAGE_PLAIN:
 			strcat(texture_filename, TEXTURE_BG_PLAIN);
@@ -95,7 +95,7 @@ void UninitBackground()
 
 void UpdateBackground()
 {
-	STAGE stage = GetStage();
+	STAGE_TYPE stage = GetStage();
 	g_background.texture = g_bg_texture[stage];
 
 #ifdef _DEBUG

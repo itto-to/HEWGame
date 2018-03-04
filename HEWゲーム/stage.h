@@ -21,12 +21,18 @@
 //*****************************************************************************
 // 列挙体宣言
 //*****************************************************************************
-enum STAGE {
+enum STAGE_TYPE {
 	STAGE_PLAIN   = 0,		// 平原ステージ
 	STAGE_DESERT  = 1,		// 砂漠ステージ
 	STAGE_VOLCANO = 2,		// 火山ステージ
 	STAGE_SNOW    = 3,		// 雪山ステージ
 	STAGE_MAX     = 4,
+};
+
+enum STAGE_STATE {
+	STAGE_STATE_STARTDASH,		// スタートダッシュ
+	STAGE_STATE_GAMEPLAY,
+	STAGE_STATE_MAX,
 };
 
 enum OBSTACLE_TYPE {
@@ -62,7 +68,7 @@ typedef struct {
 	bool should_give_skillpoint;	// スキルポイントを与えていいか
 	SKILLPOINT_STATE skill_state;	// スキルポイントを与えたか
 	int lane_no;					// 所属するレーンの番号
-	STAGE stage;					// 所属するステージ
+	STAGE_TYPE stage;					// 所属するステージ
 	OBSTACLE_TYPE obstacle_type;	// 障害物のタイプ
 	LPDIRECT3DTEXTURE9 texture;		// テクスチャ読み込み場所
 	LPDIRECT3DVERTEXBUFFER9 vtx;	// 頂点バッファ
@@ -84,6 +90,7 @@ void UpdateStage(void);
 void DrawStage(void);
 OBSTACLE *GetObstacle(int lane_no, int obstacle_no);
 LANE *GetLane(int no);
-STAGE GetStage(void);
+STAGE_TYPE GetStage(void);
+STAGE_STATE GetStageState(void);
 
 #endif

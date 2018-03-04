@@ -25,9 +25,7 @@
 #define PLAYER_LARGE_JUMP_SPEED (12.f)					// プレイヤーの大ジャンプ初速
 #define GRAVITY_ACCELARATION (-0.5f)					// 重力加速度
 
-#define PLAYER_BB_MAX		(D3DXVECTOR3(HALF_PLAYER_WIDTH, HALF_PLAYER_HEIGHT, HALF_PLAYER_DEPTH))// プレイヤーバウンディングボックスのmax頂点座標
-#define PLAYER_BB_MIN		(-PLAYER_BB_MAX)			// プレイヤーバウンディングボックスのmin頂点座標
-
+#define PLAYER_HIT_BOX		{D3DXVECTOR3(-20.0f, 0.0f, 0.0f), D3DXVECTOR3(20.0f, 70.0f, 0.0f)}
 #define SLIDING_HIT_BOX		{D3DXVECTOR3(-HALF_PLAYER_WIDTH, -HALF_PLAYER_HEIGHT, -HALF_PLAYER_DEPTH), D3DXVECTOR3(HALF_PLAYER_WIDTH, 0.0f, HALF_PLAYER_DEPTH)}
 
 
@@ -37,6 +35,7 @@
 //*****************************************************************************
 enum PLAYER_STATE {
 	PLAYER_NONE,
+	PLAYER_STARTDASH,	// スタートダッシュ
 	PLAYER_ONGROUND,	// 着地
 	PLAYER_JUMP,		// ジャンプ中
 	PLAYER_SLIDING,		// スライディング
@@ -72,6 +71,7 @@ typedef struct
 	int invincible_counter;		// 無敵時間のカウント
 	BOUNDING_BOX hit_box;		// プレイヤーの当たり判定
 	BOUNDING_BOX screen_box;	// 画面外判定用ボックス
+	float dash_gauge;					// スタートダッシュ
 } PLAYER;
 
 //*****************************************************************************
@@ -89,5 +89,8 @@ D3DXVECTOR3 GetRotationDestPlayer(void);
 D3DXVECTOR3 GetMovePlayer(void);
 int NumPlayer(void);
 void IncreaseSkillpoint(int player_no);
+int MaxLife(void);
+bool IsDashGaugeFull(int player_no);
+bool AllPlayersDead(void);
 
 #endif

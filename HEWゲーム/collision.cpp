@@ -43,7 +43,7 @@ HRESULT InitDebugBoundingBox(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	// バウンディングボックス描画用頂点作成
-	MakeVertex(pDevice, &g_vtxBoundingBox, 1.0f, 1.0f);
+	MakeVertex(pDevice, &g_vtxBoundingBox, NULL, 1.0f, 1.0f);
 
 	// バウンディングボックス描画用テクスチャ読み込み
 	if (FAILED(D3DXCreateTextureFromFile(pDevice, TEXTURE_BOUNDING_BOX, &g_textureBoundingBox))) {
