@@ -68,6 +68,7 @@
     <ClCompile Include="score.cpp" />
     <ClCompile Include="shadow.cpp" />
     <ClCompile Include="skill.cpp" />
+    <ClCompile Include="skillact.cpp" />
     <ClCompile Include="sound.cpp" />
     <ClCompile Include="stage.cpp" />
     <ClCompile Include="timer.cpp" />
