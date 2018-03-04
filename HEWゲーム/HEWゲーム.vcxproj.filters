@@ -93,7 +93,11 @@
     <ClInclude Include="drawresult.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="resource.h">
+=======
+    <ClInclude Include="skillact.h">
+>>>>>>> 80482b92fbcf18108078830b39fd24ad7f4f2189
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -173,10 +177,19 @@
     <ClCompile Include="player_behavior.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+<<<<<<< HEAD
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HEWゲーム.rc">
       <Filter>リソース ファイル</Filter>
     </ResourceCompile>
+=======
+    <ClCompile Include="drawresult.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="skillact.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+>>>>>>> 80482b92fbcf18108078830b39fd24ad7f4f2189
   </ItemGroup>
 </Project>
