@@ -160,10 +160,33 @@ void UpdatePlayer(void)
 			break;
 		}
 
+#ifdef _DEBUG
+		if (GetKeyboardPress(DIK_DOWN)) {
+			for (int i = 0; i < MAX_PLAYER; i++)
+			{
+				g_playerWk[i].pos.y -= 1.0f;
+				g_playerWk[i].ground -= 1.0f;
+			}
+		}
+		if (GetKeyboardPress(DIK_UP)) {
+			for (int i = 0; i < MAX_PLAYER; i++)
+			{
+				g_playerWk[i].pos.y += 1.0f;
+				g_playerWk[i].ground += 1.0f;
+			}
+		}
+#endif
+
+		// スキル発動
+		if (IsButtonTriggered(no, BUTTON_C) || GetKeyboardTrigger(DIK_C)) {
+			// TODO:スキル発動処理を書く
+
+		}
+
 		// 死亡判定
 		if (g_playerWk[no].life <= 0)
 		{
-			g_playerWk[no].state = PLAYER_DEAD;
+			g_playerWk[no].next_state = PLAYER_DEAD;
 		}
 
 

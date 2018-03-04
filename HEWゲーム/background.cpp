@@ -8,11 +8,17 @@
 
 #include "debugproc.h"
 #include "mesh.h"
+#include "stage.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_BG_PLAIN		"data/TEXTURE/bg_plain.png"
+#define TEXTURE_PATH			"data/TEXTURE/"
+#define TEXTURE_BG_PLAIN		"bg_plain.png"
+#define TEXTURE_BG_DESERT		"bg_desert.jpg"
+#define TEXTURE_BG_VOLCANO		"bg_volcano.jpg"
+#define TEXTURE_BG_SNOW			"bg_snow.jpg"
+
 
 
 //*****************************************************************************
@@ -34,6 +40,7 @@ typedef struct {
 // グローバル変数
 //*****************************************************************************
 BACKGROUND g_background;
+LPDIRECT3DTEXTURE9 g_bg_texture[STAGE_MAX];		// テクスチャのポインタ
 
 
 HRESULT InitBackground()
@@ -46,9 +53,30 @@ HRESULT InitBackground()
 	MakeVertex(pDevice, &g_background.vtx, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// テクスチャ作成
-	if (FAILED(D3DXCreateTextureFromFile(pDevice, TEXTURE_BG_PLAIN, &g_background.texture)))
+	for (int stage_no = 0; stage_no < STAGE_MAX; stage_no++)
 	{
-		return E_FAIL;
+		char texture_filename[MAX_PATH] = TEXTURE_PATH;
+
+		switch ((STAGE)stage_no)
+		{
+		case STAGE_PLAIN:
+			strcat(texture_filename, TEXTURE_BG_PLAIN);
+			break;
+		case STAGE_DESERT:
+			strcat(texture_filename, TEXTURE_BG_DESERT);
+			break;
+		case STAGE_VOLCANO:
+			strcat(texture_filename, TEXTURE_BG_VOLCANO);
+			break;
+		case STAGE_SNOW:
+			strcat(texture_filename, TEXTURE_BG_SNOW);
+			break;
+		}
+
+		if (FAILED(D3DXCreateTextureFromFile(pDevice, texture_filename, &g_bg_texture[stage_no])))
+		{
+			return E_FAIL;
+		}
 	}
 
 	return S_OK;
@@ -57,14 +85,23 @@ HRESULT InitBackground()
 void UninitBackground()
 {
 	SAFE_RELEASE(g_background.vtx);
-	SAFE_RELEASE(g_background.texture);
+
+	for (int stage_no = 0; stage_no < STAGE_MAX; stage_no++)
+	{
+		SAFE_RELEASE(g_bg_texture[stage_no]);
+	}
 }
 
 
 void UpdateBackground()
 {
+	STAGE stage = GetStage();
+	g_background.texture = g_bg_texture[stage];
+
+#ifdef _DEBUG
 	PrintDebugProc("***背景***\n");
 	PrintDebugProc("座標： X %f Y%f Z%f\n", g_background.pos.x, g_background.pos.y, g_background.pos.z);
+#endif
 }
 
 void DrawBackground()
@@ -101,33 +138,4 @@ void DrawBackground()
 
 	// 描画
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
-
-	
-	//DrawMesh(g_background.vtx, g_background.texture, g_background.pos, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-
-
-	//LPDIRECT3DDEVICE9 pDevice = GetDevice();
-	//D3DXMATRIX mtxWorld, mtxRot, mtxTranslate;
-
-	//// 頂点バッファをデバイスのデータストリームにバインド
-	//pDevice->SetStreamSource(0, g_background.vtx, 0, sizeof(VERTEX_3D));
-
-	//// 頂点フォーマットの設定
-	//pDevice->SetFVF(FVF_VERTEX_3D);
-
-	//// ワールドマトリックスの初期化
-	//D3DXMatrixIdentity(&mtxWorld);
-
-	//// 移動を反映
-	//D3DXMatrixTranslation(&mtxTranslate, g_background.pos.x, g_background.pos.y, g_background.pos.z);
-	//D3DXMatrixMultiply(&mtxWorld, &mtxWorld, &mtxTranslate);
-
-	//// ワールドマトリックスの設定
-	//pDevice->SetTransform(D3DTS_WORLD, &mtxWorld);
-
-	//// テクスチャの設定
-	//pDevice->SetTexture(0, g_background.texture);
-
-	//// 描画
-	//pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 }

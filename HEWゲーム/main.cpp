@@ -12,6 +12,7 @@
 #include "fade.h"
 #include "game.h"
 #include "input.h"
+#include "resource.h"
 #include "result.h"
 #include "sound.h"
 #include "title.h"
@@ -20,7 +21,7 @@
 // マクロ定義
 //*****************************************************************************
 #define CLASS_NAME		"AppClass"			// ウインドウのクラス名
-#define WINDOW_NAME		"HEWゲーム"		// ウインドウのキャプション名
+#define WINDOW_NAME		"アイラディブ"		// ウインドウのキャプション名
 
 //*****************************************************************************
 // 構造体定義
@@ -30,6 +31,7 @@
 // プロトタイプ宣言
 //*****************************************************************************
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK DlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
 void Uninit(void);
 void Update(void);
@@ -101,8 +103,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 						hInstance,
 						NULL);
 
+	bool window = false;
+	if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, (DLGPROC)DlgProc) == IDC_BUTTON1)
+		window = true;
+
 	// 初期化処理(ウィンドウを作成してから行う)
-	if(FAILED(Init(hInstance, hWnd, true)))
+	if(FAILED(Init(hInstance, hWnd, window)))
 	{
 		return -1;
 	}
@@ -199,6 +205,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+LRESULT CALLBACK DlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	switch (msg) {
+	case WM_INITDIALOG:
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDC_BUTTON1:
+			EndDialog(hDlgWnd, IDC_BUTTON1);
+			break;
+		case IDC_BUTTON2:
+			EndDialog(hDlgWnd, IDC_BUTTON2);
+			break;
+		default:
+			return FALSE;
+		}
+	default:
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
 //=============================================================================
 // 初期化処理
 //=============================================================================
@@ -279,6 +308,9 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);				// αブレンドを行う
 	g_pD3DDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);		// αソースカラーの指定
 	g_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);	// αデスティネーションカラーの指定
+	g_pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);				// αテストを有効化
+	g_pD3DDevice->SetRenderState(D3DRS_ALPHAREF, 1);						// α値が1以上なら書き込み
+	g_pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 
 	// サンプラーステートパラメータの設定
 	g_pD3DDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);	// テクスチャアドレッシング方法(U値)を設定

@@ -36,6 +36,7 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="player_behavior.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="score.h" />
     <ClInclude Include="shadow.h" />
@@ -52,7 +53,6 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="collision.cpp" />
     <ClCompile Include="debugproc.cpp" />
-    <ClCompile Include="drawresult.cpp" />
     <ClCompile Include="effect.cpp" />
     <ClCompile Include="explosion.cpp" />
     <ClCompile Include="fade.cpp" />
@@ -73,6 +73,9 @@
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="title.cpp" />
     <ClCompile Include="mesh.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="HEWゲーム.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6ee1f8fb-4bc0-4e19-ab5d-581971e22704}</ProjectGuid>

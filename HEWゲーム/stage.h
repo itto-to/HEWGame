@@ -84,5 +84,6 @@ void UpdateStage(void);
 void DrawStage(void);
 OBSTACLE *GetObstacle(int lane_no, int obstacle_no);
 LANE *GetLane(int no);
+STAGE GetStage(void);
 
 #endif

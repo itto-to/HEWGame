@@ -420,7 +420,7 @@ HRESULT InitPad(void)		// パッド初期化
 	for (int i = 0; i < padCount; i++)
 	{
 		// ジョイスティック用のデータ・フォーマットを設定
-		result = pGamePad[i]->SetDataFormat(&c_dfDIJoystick);
+		result = pGamePad[i]->SetDataFormat(&c_dfDIJoystick2);
 		if (FAILED(result))
 			return false; // データフォーマットの設定に失敗
 

@@ -96,12 +96,12 @@ void UpdatePlayerOnGround(PLAYER *player)
 	// ジャンプ処理
 	if (IsButtonTriggered(player->lane_no, BUTTON_A) || GetKeyboardTrigger(DIK_Z))
 	{
-		player->move.y = PLAYER_JUMP_SPEED;
+		player->jump_speed = PLAYER_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
 	}
 	else if (IsButtonTriggered(player->lane_no, BUTTON_C) || GetKeyboardTrigger(DIK_X))
 	{
-		player->move.y = PLAYER_BIG_JUMP_SPEED;
+		player->jump_speed = PLAYER_LARGE_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
 	}
 	else if (IsButtonTriggered(player->lane_no, BUTTON_DOWN) || GetKeyboardTrigger(DIK_DOWN))	// スライディング処理
@@ -116,7 +116,7 @@ void UpdatePlayerJump(PLAYER *player)
 	// y = v0 * t + 1 / 2 * g * t^2
 	// ジャンプ処理
 	player->state_counter += speed_factor;
-	player->pos.y = player->ground + PLAYER_JUMP_SPEED * player->state_counter + 0.5f * GRAVITY_ACCELARATION * player->state_counter * player->state_counter;
+	player->pos.y = player->ground + player->jump_speed * player->state_counter + 0.5f * GRAVITY_ACCELARATION * player->state_counter * player->state_counter;
 
 	//player->pos += player->move * player->speed_factor;
 	//player->move.y += GRAVITY_ACCELARATION * player->speed_factor;	// 重力加速度
@@ -141,7 +141,8 @@ void UpdatePlayerSliding(PLAYER *player)
 
 void UpdatePlayerDead(PLAYER *player)
 {
-
+	player->pos.x += 5.0f;
+	player->rot.z -= 0.05f;
 }
 
 void EnterPlayerOnGround(PLAYER *player)

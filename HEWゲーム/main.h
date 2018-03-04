@@ -38,10 +38,10 @@
 // ３Ｄポリゴン頂点フォーマット( 頂点座標[3D] / 法線 / 反射光 / テクスチャ座標 )
 #define	FVF_VERTEX_3D	(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 
-#define SCREEN_WIDTH		(1280)				// ウインドウの幅
-#define SCREEN_HEIGHT		(960)				// ウインドウの高さ
-#define SCREEN_PIXEL_WIDTH	(1280)
-#define SCREEN_PIXEL_HEIGHT	(960)
+#define SCREEN_WIDTH		(1366)				// ウインドウの幅
+#define SCREEN_HEIGHT		(768)				// ウインドウの高さ
+#define SCREEN_PIXEL_WIDTH	(1366)
+#define SCREEN_PIXEL_HEIGHT	(768)
 #define SCREEN_CENTER_X	(SCREEN_WIDTH / 2)	// ウインドウの中心Ｘ座標
 #define SCREEN_CENTER_Y	(SCREEN_HEIGHT / 2)	// ウインドウの中心Ｙ座標
 

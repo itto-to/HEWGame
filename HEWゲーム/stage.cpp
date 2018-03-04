@@ -69,7 +69,7 @@ STAGE g_stage;		// 現在のステージ
 LANE g_lane[MAX_PLAYER];
 OBSTACLE g_obstacle[MAX_PLAYER][MAX_NUM_OBSTACLE];
 STAGE_DATA g_stage_data[STAGE_MAX];
-LPDIRECT3DTEXTURE9 g_texture[STAGE_MAX][OBSTACLE_MAX];
+LPDIRECT3DTEXTURE9 g_bg_texture[STAGE_MAX][OBSTACLE_MAX];
 LPDIRECT3DVERTEXBUFFER9 g_vtx;
 
 
@@ -118,7 +118,7 @@ HRESULT InitStage(void)
 
 			D3DXCreateTextureFromFile(pDevice,					// デバイスへのポインタ
 				filename,		// ファイルの名前
-				&g_texture[stage_no][obstacle_no]);	// 読み込むメモリー
+				&g_bg_texture[stage_no][obstacle_no]);	// 読み込むメモリー
 		}
 	}
 
@@ -126,7 +126,7 @@ HRESULT InitStage(void)
 	MakeVertex(pDevice, &g_vtx, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
 
 	// 最初は平原ステージから
-	g_stage = STAGE_PLAIN;
+	g_stage = STAGE_VOLCANO;
 
 	// レーン初期化
 	for (int i = 0; i < MAX_PLAYER; i++)
@@ -383,13 +383,13 @@ void SetObstacle(STAGE stage)
 
 			switch(tile) {
 			case CHAR_JUMP:
-				obstacle.texture = g_texture[stage][OBSTACLE_JUMP];
+				obstacle.texture = g_bg_texture[stage][OBSTACLE_JUMP];
 				break;
 			case CHAR_LARGEJUMP:
-				obstacle.texture = g_texture[stage][OBSTACLE_LARGE_JUMP];
+				obstacle.texture = g_bg_texture[stage][OBSTACLE_LARGE_JUMP];
 				break;
 			case CHAR_SLIDING:
-				obstacle.texture = g_texture[stage][OBSTACLE_SLIDING];
+				obstacle.texture = g_bg_texture[stage][OBSTACLE_SLIDING];
 				break;
 			default:
 				assert(!"不正なキャラクター");
@@ -411,4 +411,10 @@ void SetObstacle(STAGE stage)
 void SetObstacleStatus(OBSTACLE *obstacle, D3DXVECTOR3 pos, STAGE stage, OBSTACLE_TYPE type)
 {
 
+}
+
+// 現在のステージを取得
+STAGE GetStage(void)
+{
+	return g_stage;
 }

@@ -15,14 +15,14 @@
 //*****************************************************************************
 #define MAX_PLAYER			(4)							// プレイヤーの数
 
-#define PLAYER_WIDTH		(100)
-#define PLAYER_HEIGHT		(100)
+#define PLAYER_WIDTH		(40)
+#define PLAYER_HEIGHT		(77)
 #define HALF_PLAYER_WIDTH	(PLAYER_WIDTH / 2)
 #define HALF_PLAYER_HEIGHT	(PLAYER_HEIGHT / 2)
 #define HALF_PLAYER_DEPTH	(0.0f)
 
-#define PLAYER_JUMP_SPEED	(15.f)						// プレイヤーのジャンプ初速
-#define PLAYER_BIG_JUMP_SPEED (20.f)					// プレイヤーの大ジャンプ初速
+#define PLAYER_JUMP_SPEED	(9.f)						// プレイヤーのジャンプ初速
+#define PLAYER_LARGE_JUMP_SPEED (12.f)					// プレイヤーの大ジャンプ初速
 #define GRAVITY_ACCELARATION (-0.5f)					// 重力加速度
 
 #define PLAYER_BB_MAX		(D3DXVECTOR3(HALF_PLAYER_WIDTH, HALF_PLAYER_HEIGHT, HALF_PLAYER_DEPTH))// プレイヤーバウンディングボックスのmax頂点座標
@@ -62,6 +62,7 @@ typedef struct
 	D3DXVECTOR3 scl;			// スケール
 	float ground;				// 地面の高さ
 	float distance;				// 進んだ距離
+	float jump_speed;			// ジャンプ時の初速
 	int life;					// プレイヤーの体力
 	PLAYER_STATE state;			// プレイヤーの状態
 	PLAYER_STATE next_state;	// プレイヤーの次の状態
