@@ -210,6 +210,7 @@ void UpdateSkill(float gageup)
 //****************************************************************
 void UpdateSkillAct(void)
 {
+	PLAYER *player = GetPlayer(0);
 	LANE *lane = GetLane(0);
 	SKILLACT *skillactWk = GetSkillAct(0);
 
@@ -257,7 +258,17 @@ void UpdateSkillAct(void)
 		if(skillactWk[i].Kaminari_active == true)
 		{
 			skillactWk[i].Kaminari_pos.y -= KAMINARI_SPEED;
-			//
+			//	雷のY座標とプレイヤーのY座標を引いて、プレイヤーの半分の高さを下回っていたらヒット
+			if(skillactWk[i].Kaminari_pos.y - player[i].pos.y < HALF_PLAYER_HEIGHT)
+			{
+				// ライフが減る
+				player[i].life--;
+				// 未使用に…
+				skillactWk[i].Kaminari_active = false;
+				skillWk.moving = false;
+
+			}
+
 		}
 	}
 }
