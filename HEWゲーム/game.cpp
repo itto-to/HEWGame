@@ -128,6 +128,7 @@ void UpdateGame(void)
 	CheckHitPlayerObstacle();
 
 	// スキルの更新処理
+	UpdateSkill(0);
 	UpdateSkillAct();
 
 	// ライフ処理の更新

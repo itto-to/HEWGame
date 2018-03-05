@@ -61,11 +61,8 @@ int skill_count_winner(void);
 SKILL skillWk;							// スキル構造体
 SKILL_FLAG skill_flag[MAX_PLAYER];
 bool skillcheck_ok;						// スキル発動の権利を持っているプレイヤーが1人かどうか
+bool firstflag;							// 最初に権限を持ったプレイヤーが発生したかどうか
 
-//char *bulletFileName[] =
-//{
-
-//};
 //***************************************************************
 // 関数名:		HRESULT InitSkill(void)
 // 引数:		なし
@@ -100,6 +97,7 @@ HRESULT InitSkill(void)
 
 	// まだ権限は割り振られていない
 	skillWk.kengen = false;
+	firstflag = false;
 	// まだスキルは実行状態ではない
 	skillWk.moving = false;
 
@@ -154,12 +152,15 @@ void UninitSkill(void)
 //****************************************************************
 void UpdateSkill(float gageup)
 {
+	bool first_skill_flag;
+	bool gage_max = false;
 	int skillget_count = 0;
 	PLAYER *player = GetPlayer(0);
 	skillcheck_ok = true;					// スキルの発動権利を持っているプレイヤーは1人かどうか
 
 
-	
+	// 引数の値が0より高ければ実行(常に実行でも問題なさそうなら消します)
+	if(gageup > 0)
 	{
 
 		// スキルゲージ上昇
@@ -204,8 +205,24 @@ void UpdateSkill(float gageup)
 				skillWk.kengen = true;
 			}
 		}
+		
 	}
+	
 
+	// ダッシュゲージの量を測定
+		for(int i = 0; i < MAX_PLAYER;i++)
+		{	// 一度もスキルが割り振られていなければ実行
+			if(firstflag == false)
+			{
+				gage_max = IsDashGaugeFull(i);
+				if(gage_max == true)
+				{
+					player[i].kengen = true;
+					firstflag = true;
+				}
+			}
+		}
+	
 }
 
 //****************************************************************
