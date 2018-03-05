@@ -321,12 +321,20 @@ void UpdateStageGameplay(void)
 
 			obstacle->pos += obstacle->move * g_lane[obstacle->lane_no].speed_factor;
 
+
 			PLAYER *player = GetPlayer(player_no);
 			// プレイヤーが障害物を飛び越えたか判定
 			// プレイヤーが無敵状態でない かつ 障害物がスキルポイントを未付与
 			if ((obstacle->pos.x > JUMP_OVER_DECISION_POS_X) && obstacle->should_give_skillpoint && !player->is_invincible)
 			{
+			
+				//player->skillpoint++;
+				// スキルポイントを上げる
 				player->skillpoint++;
+				if(player->kengen == true)
+				{
+					UpdateSkill(1);
+				}
 				obstacle->should_give_skillpoint = false;
 			}
 		}

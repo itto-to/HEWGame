@@ -29,7 +29,6 @@
     <ClInclude Include="explosion.h" />
     <ClInclude Include="fade.h" />
     <ClInclude Include="game.h" />
-    <ClInclude Include="hud.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="life.h" />
@@ -59,7 +58,6 @@
     <ClCompile Include="explosion.cpp" />
     <ClCompile Include="fade.cpp" />
     <ClCompile Include="game.cpp" />
-    <ClCompile Include="hud.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="life.cpp" />

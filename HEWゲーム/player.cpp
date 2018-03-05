@@ -18,6 +18,7 @@
 #include "player_behavior.h"
 #include "score.h"
 #include "sound.h"
+#include "skill.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -98,7 +99,7 @@ HRESULT InitPlayer(void)
 		g_playerWk[no].state   = PLAYER_STARTDASH;
 		g_playerWk[no].speed_factor = 1.0f;
 		g_playerWk[no].dash_gauge = 0.0f;
-		
+		g_playerWk[no].kengen = false;
 		// 当たり判定初期化
 		g_playerWk[no].hit_box = PLAYER_HIT_BOX;
 
@@ -156,6 +157,8 @@ void UninitPlayer(void)
 //=============================================================================
 void UpdatePlayer(void)
 {
+	SKILL *skillWk = GetSkillWk(0);
+
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
 		switch (g_playerWk[no].state)
@@ -217,8 +220,13 @@ void UpdatePlayer(void)
 
 		// スキル発動
 		if (IsButtonTriggered(no, BUTTON_SKILL) || GetKeyboardTrigger(KEY_SKILL)) {
-			// TODO:スキル発動処理を書く
-
+			// まず5回飛んでいるのかを確認
+			//if(g_playerWk[no].skillpoint >= 5)
+			{
+				skillWk->lv = 3;
+				//5回飛んでいた場合スキル発動
+				SkillAct(no);
+			}
 		}
 
 		// 死亡判定

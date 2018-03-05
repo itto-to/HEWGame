@@ -7,6 +7,7 @@
 #include "result.h"
 #include "input.h"
 #include "fade.h"
+#include "player.h"
 
 //*****************************************************************************
 // ƒ}ƒNƒ’è‹`
@@ -38,6 +39,7 @@ LPDIRECT3DVERTEXBUFFER9 g_pD3DVtxBuffResultLogo = NULL;	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒ
 int						g_nCountAppearResult = 0;		// oŒ»‚Ü‚Å‚Ì‘Ò‚¿ŠÔ
 float					g_fAlphaResult = 0.0f;			// ƒŠƒUƒ‹ƒgƒƒS‚Ìƒ¿’l
 int						g_nCountWaitResult = 0;			// ‘Ò‚¿ŠÔ
+RESULT resultWk[MAX_PLAYER];
 
 //=============================================================================
 // ‰Šú‰»ˆ—
@@ -255,6 +257,54 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 		g_pD3DVtxBuffResultLogo->Unlock();
 	}
 
+
+	// ƒLƒƒƒ‰ƒNƒ^[‚Ì’¸“_ƒoƒbƒtƒ@¶¬
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// ’¸“_ƒf[ƒ^—p‚ÉŠm•Û‚·‚éƒoƒbƒtƒ@ƒTƒCƒY(ƒoƒCƒg’PˆÊ)
+			D3DUSAGE_WRITEONLY,			// ’¸“_ƒoƒbƒtƒ@‚Ìg—p–@@
+			FVF_VERTEX_2D,				// g—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg
+			D3DPOOL_MANAGED,			// ƒŠƒ\[ƒX‚Ìƒoƒbƒtƒ@‚ğ•Û‚·‚éƒƒ‚ƒŠƒNƒ‰ƒX‚ğw’è
+			&resultWk[i].resultrank_buff,	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒtƒF[ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
+			NULL)))						// NULL‚Éİ’è
+		{
+			return E_FAIL;
+		}
+
+		{//’¸“_ƒoƒbƒtƒ@‚Ì’†g‚ğ–„‚ß‚é
+			VERTEX_2D *pVtx;
+
+			// ’¸“_ƒf[ƒ^‚Ì”ÍˆÍ‚ğƒƒbƒN‚µA’¸“_ƒoƒbƒtƒ@‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğæ“¾
+			g_pD3DVtxBuffResultLogo->Lock(0, 0, (void**)&pVtx, 0);
+
+			// ’¸“_À•W‚Ìİ’è
+			pVtx[0].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y, 0.0f);
+			pVtx[1].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y, 0.0f);
+			pVtx[2].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
+			pVtx[3].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
+
+			// ƒeƒNƒXƒ`ƒƒ‚Ìƒp[ƒXƒyƒNƒeƒBƒuƒRƒŒƒNƒg—p
+			pVtx[0].rhw =
+				pVtx[1].rhw =
+				pVtx[2].rhw =
+				pVtx[3].rhw = 1.0f;
+
+			// ”½ËŒõ‚Ìİ’è
+			pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
+			pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
+			pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
+			pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
+
+			// ƒeƒNƒXƒ`ƒƒÀ•W‚Ìİ’è
+			pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+			pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+			pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+			pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+
+			// ’¸“_ƒf[ƒ^‚ğƒAƒ“ƒƒbƒN‚·‚é
+			g_pD3DVtxBuffResultLogo->Unlock();
+		}
+	}
 	return S_OK;
 }
 

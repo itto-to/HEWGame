@@ -14,6 +14,7 @@
 #include "skillact.h"
 #include "player.h"
 #include "sound.h"
+#include "debugproc.h"
 //***************************************************************
 // マクロ定義
 //***************************************************************
@@ -41,8 +42,9 @@
 // その他ゲージ関連
 #define SKILL_LEVELUP	(5)			// レベルアップに必要な値
 
+//
 // スキルの加速及び減速
-#define LANESPEED_UP	(0.5f)
+#define LANESPEED_UP	(0.05f)
 #define LANESPEED_DOWN	(0.1f)
 
 
@@ -100,6 +102,10 @@ HRESULT InitSkill(void)
 	skillWk.kengen = false;
 	// まだスキルは実行状態ではない
 	skillWk.moving = false;
+
+	skillWk.gage = 0.0f;
+	skillWk.gage_lvup = 5;
+
 	return S_OK;
 
 }
@@ -152,7 +158,7 @@ void UpdateSkill(float gageup)
 	PLAYER *player = GetPlayer(0);
 	skillcheck_ok = true;					// スキルの発動権利を持っているプレイヤーは1人かどうか
 
-	// ゲージへの加算がある場合
+
 	
 	{
 
@@ -161,7 +167,7 @@ void UpdateSkill(float gageup)
 		skillWk.gage += gageup;
 
 		// もしゲージが一定以上貯まっていたなら
-		if(skillWk.gage >= 5)
+		if(skillWk.gage >= 5 && skillWk.lv <= 3)
 		{
 			PlaySound(SOUND_LABEL_SKILL_GAGEON);
 			skillWk.lv++;				// レベルを上げて
@@ -279,7 +285,7 @@ void UpdateSkillAct(void)
 // 戻り値:	なし
 // 説明:	スキルゲージの描画
 //****************************************************************
-void DrawSkill(void)
+HRESULT DrawSkill(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 	float skill_hiritsu;		// バーの比率
@@ -302,9 +308,58 @@ void DrawSkill(void)
 
 	}
 
-	// ライフゲージを描画
+	// スキルバーのバッファ作成
+	if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用、確保するバッファのサイズ
+		D3DUSAGE_WRITEONLY,		// 使用法
+		FVF_VERTEX_2D,				// 頂点フォーマット
+		D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラス
+		&skillWk.Buff_bar,			// 頂点バッファインタフェースへのポインタ
+		NULL)))						// NULLに設定
 	{
-		// 頂点バッファをデバイスのストリームにバインド
+		return E_FAIL;
+	}
+
+
+
+	// 頂点バッファの中身を埋める
+	{
+		VERTEX_2D *pVtx;
+
+		// 頂点データの範囲をロック＆ポインタを取得
+		skillWk.Buff_bar->Lock(0, 0, (void**)&pVtx, 0);
+
+		// 頂点座標の設定
+		pVtx[0].vtx = D3DXVECTOR3(SKILLBAR_POS_X, SKILLBAR_POS_Y, 0.0f);
+		pVtx[1].vtx = D3DXVECTOR3(SKILLBAR_POS_X + Draw_Skillbar, SKILLBAR_POS_Y, 0.0f);
+		pVtx[2].vtx = D3DXVECTOR3(SKILLBAR_POS_X, SKILLBAR_POS_Y + SKILLBAR_HEIGHT, 0.0f);
+		pVtx[3].vtx = D3DXVECTOR3(SKILLBAR_POS_X + Draw_Skillbar, SKILLBAR_POS_Y + SKILLBAR_HEIGHT, 0.0f);
+
+		// テクスチャのパースペクティブコレクト用
+		pVtx[0].rhw =
+			pVtx[1].rhw =
+			pVtx[2].rhw =
+			pVtx[3].rhw = 1.0f;
+
+		// 反射光の設定
+		pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+
+		// テクスチャ座標の設定
+		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+		pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+
+		// 頂点データをアンロック
+		skillWk.Buff_bar->Unlock();
+	}
+
+
+	// バーを描画
+	{
+		// 頂点バッファをデバイスのデータストリームにバインド
 		pDevice->SetStreamSource(0, skillWk.Buff_bar, 0, sizeof(VERTEX_2D));
 		// 頂点フォーマットの設定
 		pDevice->SetFVF(FVF_VERTEX_2D);
@@ -312,7 +367,13 @@ void DrawSkill(void)
 		pDevice->SetTexture(0, skillWk.Texture_bar);
 		// ポリゴンの描画
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+
 	}
+
+#ifdef _DEBUG
+	PrintDebugProc("スキルレベル%d\n", skillWk.lv);
+#endif
+
 }
 
 //*****************************************************************
@@ -621,6 +682,8 @@ void SkillAct(int player_no)
 		// 効果発動時に権限を失う
 		player[player_no].kengen = false;
 		SkillReset(player_no);
+		skillWk.moving = true;
+		
 
 		// 効果の発動
 		// 各プレイヤーごとに効果を発動していく
@@ -674,6 +737,8 @@ void SkillAct(int player_no)
 				}
 			}
 		}
+
+		skillWk.lv = 0;
 	}
 
 }

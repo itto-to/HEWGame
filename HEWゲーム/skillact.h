@@ -83,5 +83,10 @@ typedef enum
 void MakeVertexSkillact(LPDIRECT3DDEVICE9 pDevice);
 int SetSkillAct(D3DXVECTOR3 pos, int effect, int player_no, D3DXCOLOR col);
 SKILLACT *GetSkillAct(int no);
+HRESULT InitSkillAct(void);
+void UninitSkillAct(void);
+void DrawSkillAct(void);
+
+
 #endif
 

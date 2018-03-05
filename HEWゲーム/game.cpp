@@ -18,6 +18,7 @@
 #include "score.h"
 #include "shadow.h"
 #include "skill.h"
+#include "skillact.h"
 #include "sound.h"
 #include "stage.h"
 #include "timer.h"
@@ -60,6 +61,7 @@ HRESULT InitGame(void)
 
 	// スキルゲージの初期化
 	InitSkill();
+	InitSkillAct();
 
 	// ライフの初期化
 	InitLife();
@@ -91,6 +93,7 @@ void UninitGame(void)
 
 	// スキルゲージの終了処理
 	UninitSkill();
+	UninitSkillAct();
 
 	// ライフの終了処理
 	UninitLife();
@@ -125,7 +128,7 @@ void UpdateGame(void)
 	CheckHitPlayerObstacle();
 
 	// スキルの更新処理
-	UpdateSkill(0);
+	UpdateSkillAct();
 
 	// ライフ処理の更新
 	UpdateLife();
@@ -150,6 +153,7 @@ void DrawGame(void)
 
 	// スキルの描画
 	DrawSkill();
+	DrawSkillAct();
 
 	// ライフ処理の描画
 	DrawLife();

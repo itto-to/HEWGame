@@ -45,7 +45,7 @@ typedef struct
 
 typedef enum
 {
-	SPEEDCHANGE,
+	SPEEDCHANGE = 1,
 	OJYAMA,
 	KAMINARI,
 	SKILLEFFECT_MAX
@@ -58,12 +58,14 @@ typedef enum
 HRESULT InitSkill(void);
 void UninitSkill(void);
 void UpdateSkill(float gageup);
-void DrawSkill(void);
+HRESULT DrawSkill(void);
 HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice);
 void SetColorSkill(void);
 void GetSkill(void);
 void SkillReset(int no);
 SKILL *GetSkillWk(int no);
 void skillwinner(int no);
+void SkillAct(int player_no);
+void UpdateSkillAct(void);
 
 #endif
