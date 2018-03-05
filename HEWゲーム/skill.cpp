@@ -357,13 +357,13 @@ void SetColorSkill(void)
 
 
 //*****************************************************************************
-// 関数名:	void GetSkill(no)
+// 関数名:	void GetSkill(void)
 // 引数:	5回飛んだプレイヤーの番号
 // 戻り値:
 // 説明:	updateskillで権限を持っているプレイヤーが2人以上の場合実行、1人のプレイヤーに権限を与える
 //			[Get関数ではないです！]
 //*****************************************************************************
-void GetSkill(int no)
+void GetSkill(void)
 {
 	PLAYER *player = GetPlayer(0);
 	int skill_life_lower;
@@ -519,12 +519,29 @@ void SkillReset(int no)
 //************************************************************************************************
 void SkillAct(int player_no)
 {
-	switch(skillWk.lv)
-	{
-	case SPEEDCHANGE:
-		// 動作
+	srand((unsigned)time(NULL));
+	int randum;
 
-		case 
+	// 効果の発動
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		switch(skillWk.lv)
+		{
+		case SPEEDCHANGE:
+			// 動作
+			randum = rand() % 2;
+			switch(randum)
+			{
+			case 0:
+
+				// 加速
+				g_lane[no].speed_factor
+				break;
+			case 1:
+				// 減速
+				break;
+			}
+		}
 	}
 	// 効果を発動
 	// テクスチャのセット
