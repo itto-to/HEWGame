@@ -30,5 +30,6 @@ void DrawFade(void);
 
 void SetFade(FADE fade);
 FADE GetFade(void);
+bool IsFading(void);
 
 #endif

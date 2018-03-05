@@ -11,7 +11,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define	TEXTURE_RESULT		"data/TEXTURE/bg001.jpg"		// 読み込むテクスチャファイル名
+#define	TEXTURE_RESULT		"data/TEXTURE/bg_result.jpg"		// 読み込むテクスチャファイル名
 #define	TEXTURE_RESULT_LOGO	"data/TEXTURE/result_logo.png"	// 読み込むテクスチャファイル名
 
 #define	RESULT_LOGO_POS_X	(240)		// リザルトロゴの位置(X座標)

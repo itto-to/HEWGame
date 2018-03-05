@@ -64,9 +64,6 @@ HRESULT InitGame(void)
 	// ライフの初期化
 	InitLife();
 
-	// BGM再生
-	PlaySound(SOUND_LABEL_BGM000);
-
 #ifdef _DEBUG
 	// バウンディングボックス描画用初期化
 	InitDebugBoundingBox();

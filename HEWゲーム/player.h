@@ -91,6 +91,6 @@ int NumPlayer(void);
 void IncreaseSkillpoint(int player_no);
 int MaxLife(void);
 bool IsDashGaugeFull(int player_no);
-bool AllPlayersDead(void);
+bool IsGameSet(void);
 
 #endif

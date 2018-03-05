@@ -9,6 +9,7 @@
 #include "debugproc.h"
 #include "fade.h"
 #include "input.h"
+#include "sound.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -182,6 +183,7 @@ void UpdateTitle(void)
 		else
 		{// ゲームへ
 			SetFade(FADE_OUT);
+			PlaySound(SOUND_LABEL_GAMESTART);
 		}
 	}
 }

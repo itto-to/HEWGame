@@ -15,8 +15,11 @@
 #include "camera.h"
 #include "collision.h"
 #include "debugproc.h"
+#include "fade.h"
 #include "main.h"
 #include "mesh.h"
+#include "skill.h"
+#include "sound.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -57,17 +60,23 @@
 #define OBSTACLE_LARGEJUMP_HIT_BOX	{D3DXVECTOR3(-20.0f,  0.0f, 0.0f), D3DXVECTOR3(20.0f,  70.0f, 0.0f)}
 #define OBSTACLE_SLIDING_HIT_BOX	{D3DXVECTOR3(-20.0f, 50.0f, 0.0f), D3DXVECTOR3(20.0f, 100.0f, 0.0f)}
 
+#define MAX_COUNTDOWN	(3)		// カウントダウンは3
+#define COUNT_WIDTH		(218)
+#define COUNT_HEIGHT	(350)
+
 #define CHAR_SPACE		('0')
 #define CHAR_JUMP		('1')
 #define CHAR_LARGEJUMP	('2')
 #define CHAR_SLIDING	('3')
 
-#define MAX_STAGE_COUNT			(10 * 60)	// ステージが変わるまでのカウント
+#define COUNTDOWN_INTERVAL				(100)		// カウントダウンの間隔
+#define MAX_CHANGE_STAGE_COUNT			(10 * 60)	// ステージが変わるまでのカウント
 
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
+void UpdateStageCountDown(void);
 void UpdateStageGameplay(void);
 void UpdateStageStartDash(void);
 void DrawLane(void);
@@ -79,18 +88,26 @@ void SetStageObstacle(STAGE_TYPE stage);
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-STAGE_STATE g_stage_state;	// 現在のステージ状態
+STAGE_STATE g_stage_state;			// 現在のステージ状態
 STAGE_TYPE g_stage_type;			// 現在のステージ
-int g_stage_count;			// 現在のステージのカウント
+int g_stage_count;					// 現在のステージのカウント
 LANE g_lane[MAX_PLAYER];
-LPDIRECT3DVERTEXBUFFER9 g_lane_vtx;
-LPDIRECT3DTEXTURE9 g_lane_tex;
-OBSTACLE g_obstacle[MAX_PLAYER][MAX_NUM_OBSTACLE];
+LPDIRECT3DVERTEXBUFFER9 g_lane_vtx;	// レーンの頂点
+LPDIRECT3DTEXTURE9 g_lane_tex;		// レーンのテクスチャ
+LPDIRECT3DVERTEXBUFFER9 g_count_vtx;	// レーンの頂点
+LPDIRECT3DTEXTURE9 g_count_tex[MAX_COUNTDOWN];		// レーンのテクスチャ
+OBSTACLE g_obstacle[MAX_PLAYER][MAX_NUM_OBSTACLE];	// 障害物配列
 STAGE_DATA g_stage_data[STAGE_MAX];
 LPDIRECT3DTEXTURE9 g_bg_texture[STAGE_MAX][OBSTACLE_MAX];
 LPDIRECT3DVERTEXBUFFER9 g_obstacle_vtx;
 
 
+//****************************************************************************
+// 関数名:	HRESULT InitStage(void)
+// 引数:	なし
+// 戻り値:	初期化の成功・失敗
+// 説明:	ステージ初期化
+//*****************************************************************************
 HRESULT InitStage(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
@@ -103,8 +120,8 @@ HRESULT InitStage(void)
 	{
 		for (int obstacle_no = 0; obstacle_no < OBSTACLE_MAX; obstacle_no++)
 		{
-			char filename[MAX_PATH] = "data/TEXTURE/obstacle_";
-
+			char filename[MAX_PATH] = "data/TEXTURE/obstacle_";	
+			// ステージタイプと障害物タイプに応じてテクスチャの文字列を連結
 			switch ((STAGE_TYPE)stage_no)
 			{
 			case STAGE_PLAIN:
@@ -148,9 +165,10 @@ HRESULT InitStage(void)
 	// 頂点作成
 	MakeVertex(pDevice, &g_obstacle_vtx, &D3DXVECTOR3(0.0f, OBSTACLE_HEIGHT / 2.0f, 0.0f), OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
 	MakeVertex(pDevice, &g_lane_vtx, NULL, LANE_WIDTH, LANE_HEIGHT);
+	MakeVertex(pDevice, &g_count_vtx, NULL, COUNT_WIDTH, COUNT_HEIGHT);
 
-	// 最初はスタートダッシュから
-	g_stage_state = STAGE_STATE_STARTDASH;
+	// 最初はカウントダウンから
+	g_stage_state = STAGE_STATE_COUNTDOWN;
 
 	// 最初は平原ステージから
 	g_stage_type = STAGE_PLAIN;
@@ -174,6 +192,13 @@ HRESULT InitStage(void)
 	return S_OK;
 }
 
+
+//****************************************************************************
+// 関数名:	void UninitStage(void)
+// 引数:	なし
+// 戻り値:	なし
+// 説明:	ステージ終了処理
+//****************************************************************************
 void UninitStage(void)
 {
 	for (int player_no = 0; player_no < NumPlayer(); player_no++) {
@@ -188,6 +213,7 @@ void UninitStage(void)
 	SAFE_RELEASE(g_lane_tex);
 }
 
+// ステージ更新処理
 void UpdateStage(void)
 {
 #ifdef _DEBUG
@@ -206,16 +232,41 @@ void UpdateStage(void)
 	}
 #endif
 
-	if (g_stage_state == STAGE_STATE_GAMEPLAY)
+	// ステージの状態に応じてアップデート
+	switch (g_stage_state)
 	{
+	case STAGE_STATE_COUNTDOWN:
+		UpdateStageCountDown();
+		break;
+	case STAGE_STATE_STARTDASH:
 		UpdateStageGameplay();
-	}
-	else if (g_stage_state == STAGE_STATE_STARTDASH)
-	{
+		break;
+	case STAGE_STATE_GAMEPLAY:
 		UpdateStageStartDash();
+		break;
+	}
+
+}
+
+// カウントダウン中の更新処理
+void UpdateStageCountDown(void)
+{
+	if (!IsFading())
+	{
+		// カウントを進める
+		g_stage_count++;
+		// カウントダウン音再生
+		PlaySound(SOUND_LABEL_COUNT);
+	}
+
+	if (g_stage_count >= COUNTDOWN_INTERVAL * 2)
+	{
+		// 一定カウントでスタートダッシュ状態へ
+		g_stage_state = STAGE_STATE_STARTDASH;
 	}
 }
 
+// スタートダッシュ中の更新処理
 void UpdateStageStartDash(void)
 {
 	// ダッシュゲージが満タンのプレイヤー番号を記録する配列
@@ -228,20 +279,25 @@ void UpdateStageStartDash(void)
 		if (IsDashGaugeFull(player_no))
 		{
 			dashing_players[num_dashing_player] = player_no;	// ダッシュゲージが満タンのプレイヤー番号を記録
-			num_dashing_player++;							// ダッシュゲージが満タンの
+			num_dashing_player++;								// ダッシュゲージが満タンのプレイヤー数
 		}
 	}
 
 	if (num_dashing_player != 0)	// ダッシュゲージが満タンのプレイヤーがいたら
 	{
-		int skill_player_no = dashing_players[rand() % num_dashing_player];	// その中からランダムで決定
-		g_stage_state = STAGE_STATE_GAMEPLAY;
+		// その中からランダムで決定しスキル発動権をあげる
+		int skill_player_no = dashing_players[rand() % num_dashing_player];
+		skillwinner(skill_player_no);
+
+		g_stage_state = STAGE_STATE_GAMEPLAY;	// ゲーム本編に移行
+		PlaySound(SOUND_LABEL_BGM000);			// BGM再生開始
 	}
 }
 
+// ゲーム本編の更新処理
 void UpdateStageGameplay(void)
 {
-	if (g_stage_count >= MAX_STAGE_COUNT)
+	if (g_stage_count >= MAX_CHANGE_STAGE_COUNT)
 	{
 		g_stage_count = 0;	// ステージのカウントリセット
 
@@ -300,6 +356,12 @@ void UpdateStageGameplay(void)
 	}
 }
 
+void ChangeStageState(STAGE_STATE next_stage_state)
+{
+	// ステージカウントをリセット
+	g_stage_count = 0;
+}
+
 void DrawStage(void)
 {
 	// レーン描画
@@ -316,6 +378,30 @@ void DrawStage(void)
 			DrawObstacle(&g_obstacle[player_no][obstacle_no]);
 		}
 	}
+
+	// カウント描画
+	//DrawCountDown();
+}
+
+void DrawCountDown()
+{
+	// カウントダウン状態ならカウント描画
+	//if (g_stage_state == STAGE_STATE_COUNTDOWN)
+	//{
+	//	if (g_stage_count >= COUNTDOWN_INTERVAL * 2)	
+	//	{// '1'描画
+	//		DrawMesh()
+	//	}
+	//	else if (g_stage_count >= COUNTDOWN_INTERVAL)
+	//	{
+
+	//	}
+	//	else
+	//	{
+
+	//	}
+	//}
+	//	
 }
 
 void DrawLane(void)

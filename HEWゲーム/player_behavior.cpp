@@ -11,6 +11,7 @@
 #include "debugproc.h"
 #include "input.h"
 #include "player.h"
+#include "sound.h"
 #include "stage.h"
 
 
@@ -109,13 +110,14 @@ void ExitPlayerState(PLAYER *player) {
 
 void UpdatePlayerStartDash(PLAYER * player)
 {
-
+	// ダッシュボタン連打でゲージを貯める
 	if (IsButtonTriggered(player->lane_no, BUTTON_DASH) || GetKeyboardTrigger(KEY_DASH))
 	{
 		player->dash_gauge += 1.0f;
+		PlaySound(SOUND_LABEL_RENDA);	// 連打音再生
 	}
 
-	// ゲーム開始
+	// ゲージがたまったらゲーム開始
 	if (GetStageState() == STAGE_STATE_GAMEPLAY)
 	{
 		player->next_state = PLAYER_ONGROUND;
@@ -129,11 +131,13 @@ void UpdatePlayerOnGround(PLAYER *player)
 	{
 		player->jump_speed = PLAYER_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
+		PlaySound(SOUND_LABEL_SMALLJUMP);// ジャンプ音再生
 	}
 	else if (IsButtonTriggered(player->lane_no, BUTTON_LARGEJUMP) || GetKeyboardTrigger(KEY_LARGEJUMP))
 	{
 		player->jump_speed = PLAYER_LARGE_JUMP_SPEED;
 		player->next_state = PLAYER_JUMP;
+		PlaySound(SOUND_LABEL_HIGHJUMP);// 大ジャンプ音再生
 	}
 	else if (IsButtonTriggered(player->lane_no, BUTTON_SLIDING) || GetKeyboardTrigger(KEY_SLIDING))	// スライディング処理
 	{
