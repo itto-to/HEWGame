@@ -950,7 +950,16 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 
 
 
-
+//**************************************************************************
+// ä÷êîñº:	SKILLACT *GetSkillAct(int no)
+// à¯êî:	int no
+// ñﬂÇËíl:	SKILLACT skillactWk
+// ê‡ñæ:	Getä÷êî
+//**************************************************************************
+SKILLACT *GetSkillAct(int no)
+{
+	return &skillactWk[0];
+}
 
 
 

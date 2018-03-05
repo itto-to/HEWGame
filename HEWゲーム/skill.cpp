@@ -151,49 +151,72 @@ void UpdateSkill(float gageup)
 	PLAYER *player = GetPlayer(0);
 	skillcheck_ok = true;					// スキルの発動権利を持っているプレイヤーは1人かどうか
 
-	// スキルゲージ上昇
-	PlaySound(SOUND_LABEL_SKILL_GAGECHARGE);
-	skillWk.gage += gageup;
-
-	// もしゲージが一定以上貯まっていたなら
-	if(skillWk.gage >= 5)
+	// ゲージへの加算がある場合
+	
 	{
-		PlaySound(SOUND_LABEL_SKILL_GAGEON);
-		skillWk.lv++;				// レベルを上げて
-		skillWk.gage = 0.0f;		// 値を初期化
-	}
 
-	// もし権限がまだ誰にも割り当てられていない場合
-	// 権限を決める
+		// スキルゲージ上昇
+		PlaySound(SOUND_LABEL_SKILL_GAGECHARGE);
+		skillWk.gage += gageup;
 
-	if(skillWk.kengen == false)
-	{
-		// skillpointが5になっているプレイヤーの人数を確認
-		for(int i = 0; i < MAX_PLAYER; i++)
+		// もしゲージが一定以上貯まっていたなら
+		if(skillWk.gage >= 5)
 		{
-			if(player[i].skillpoint >= 5)
+			PlaySound(SOUND_LABEL_SKILL_GAGEON);
+			skillWk.lv++;				// レベルを上げて
+			skillWk.gage = 0.0f;		// 値を初期化
+		}
+
+		// もし権限がまだ誰にも割り当てられていない場合
+		// 権限を決める
+
+		if(skillWk.kengen == false)
+		{
+			// skillpointが5になっているプレイヤーの人数を確認
+			for(int i = 0; i < MAX_PLAYER; i++)
 			{
-				player[i].kengen = true;
-				skillget_count++;
+				if(player[i].skillpoint >= 5)
+				{
+					player[i].kengen = true;
+					skillget_count++;
+				}
+				else
+				{
+					player[i].kengen = false;
+				}
+
+			}
+			// 2人以上が権限を持っている場合、条件判定へ移動
+			if(skillget_count >= 2)
+			{
+				skillcheck_ok = false;			// 権利の所有者は1人だけではない
+				GetSkill();
 			}
 			else
 			{
-				player[i].kengen = false;
+				skillWk.kengen = true;
 			}
-
-		}
-		// 2人以上が権限を持っている場合、条件判定へ移動
-		if(skillget_count >= 2)
-		{
-			skillcheck_ok = false;			// 権利の所有者は1人だけではない
-			GetSkill();
-		}
-		else
-		{
-			skillWk.kengen = true;
 		}
 	}
 
+}
+
+//****************************************************************
+// 関数名:	void UpdateSkillAct(void)
+// 引数:
+// 戻り値:
+// 説明:	スキルの効果関連の更新です
+//****************************************************************
+void UpdateSkillAct(void)
+{
+	SKILLACT *skillactWk = GetSkillact(0);
+
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		if(skillactWk[i].Up_active == true)
+		{
+		}
+	}
 }
 
 //****************************************************************
