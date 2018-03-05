@@ -887,6 +887,7 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 		skillactWk[player_no].Up_scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 		skillactWk[player_no].Up_move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		skillactWk[player_no].Up_active = true;
+		skillactWk[player_no].SpeedTime = ACTTIME_LV1;					// 実行時間設定
 		// 頂点座標の設定
 		SetVertexEffect(effect, player_no);
 
@@ -901,6 +902,7 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 		skillactWk[player_no].Down_scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 		skillactWk[player_no].Down_move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		skillactWk[player_no].Down_active = true;
+		skillactWk[player_no].SpeedTime = ACTTIME_LV1;				// 実行時間設定
 		// 頂点座標の設定
 		SetVertexEffect(effect, player_no);
 
@@ -915,6 +917,7 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 		skillactWk[player_no].Ojyama_scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 		skillactWk[player_no].Ojyama_move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		skillactWk[player_no].Ojyama_active = true;
+		skillactWk[player_no].OjyamaTime = ACTTIME_LV2;
 		// 頂点座標の設定
 		SetVertexEffect(effect, player_no);
 

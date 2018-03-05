@@ -78,6 +78,6 @@ typedef enum
 // プロトタイプ宣言
 //***************************************************
 void MakeVertexSkillact(LPDIRECT3DDEVICE9 pDevice);
-int SetSkillAct(D3DXVECTOR3 pos, int effect, int player_no, D3DXCOLOR col)
+int SetSkillAct(D3DXVECTOR3 pos, int effect, int player_no, D3DXCOLOR col);
 #endif
 

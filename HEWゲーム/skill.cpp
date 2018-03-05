@@ -380,7 +380,7 @@ void GetSkill(void)
 	int skill_count_lower;
 	int counts = 0;
 	srand((unsigned)time(NULL));
-	int unmakase;
+	int unmakase = 0;						// 0で初期化
 
 	// 同時に2人以上が条件を満たしていたら下記の判定
 
@@ -526,6 +526,7 @@ void SkillReset(int no)
 // 引数:	int player_no(権限を持っているプレイヤーの番号）
 // 戻り値:	なし
 // 説明:	権限を持っているプレイヤーの番号を受け取り効果発動
+//			SetSkillAct内のPOSを調整すると画面内の位置も変わる…はず
 //************************************************************************************************
 void SkillAct(int player_no)
 {
@@ -538,33 +539,46 @@ void SkillAct(int player_no)
 	// 各プレイヤーごとに効果を発動していく
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
-		// スキルレベルで分岐させたい
-		switch(skillWk.lv)
+		// スキル発動者ははじく
+		if(i != player_no)
 		{
-		case SPEEDCHANGE:
-			// 動作
-			randum = rand() % 2;
-			switch(randum)
+			// スキルレベルで分岐させたい
+			switch(skillWk.lv)
 			{
-			case 0:
+			case SPEEDCHANGE:
+				// 動作
+				randum = rand() % 2;
+				switch(randum)
+				{
+				case 0:
 
-				// 加速
-				lane[i].speed_factor += LANESPEED_UP;
-				SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-				// 時間設定
+					// 加速
+					lane[i].speed_factor += LANESPEED_UP;
+					SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+					// 音鳴らす
+					// 時間設定
 
+					break;
+				case 1:
+					// 減速
+					lane[i].speed_factor -= LANESPEED_DOWN;
+					SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+					// 音鳴らす
+					break;
+				}
 				break;
-			case 1:
-				// 減速
-				lane[i].speed_factor -= LANESPEED_DOWN;
-				SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-				break;
+
+			case OJYAMA:
+				// 動作
+				// ブロックの表示のみ
+				SetSkillAct(player[i].pos, EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+
+			case KAMINARI:
+				// 動作
+				// ライフ減少は雷とプレイヤーがぶつかったときに
+				SetSkillAct(player[i].pos,EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+
 			}
-			break;
-
-		case OJYAMA:
-			// 動作
-
 		}
 	}
 	// 効果を発動
