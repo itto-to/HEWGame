@@ -13,6 +13,7 @@
 #include "stage.h"
 #include "skillact.h"
 #include "player.h"
+#include "sound.h"
 //***************************************************************
 // マクロ定義
 //***************************************************************
@@ -151,11 +152,13 @@ void UpdateSkill(float gageup)
 	skillcheck_ok = true;					// スキルの発動権利を持っているプレイヤーは1人かどうか
 
 	// スキルゲージ上昇
+	PlaySound(SOUND_LABEL_SKILL_GAGECHARGE);
 	skillWk.gage += gageup;
 
 	// もしゲージが一定以上貯まっていたなら
 	if(skillWk.gage >= 5)
 	{
+		PlaySound(SOUND_LABEL_SKILL_GAGEON);
 		skillWk.lv++;				// レベルを上げて
 		skillWk.gage = 0.0f;		// 値を初期化
 	}
@@ -556,6 +559,7 @@ void SkillAct(int player_no)
 					lane[i].speed_factor += LANESPEED_UP;
 					SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 					// 音鳴らす
+					PlaySound(SOUND_LABEL_SKILL_SPEEDUP);
 					// 時間設定
 
 					break;
@@ -564,6 +568,7 @@ void SkillAct(int player_no)
 					lane[i].speed_factor -= LANESPEED_DOWN;
 					SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 					// 音鳴らす
+					PlaySound(SOUND_LABEL_SKILL_SPEEDDOWN);
 					break;
 				}
 				break;
@@ -571,10 +576,14 @@ void SkillAct(int player_no)
 			case OJYAMA:
 				// 動作
 				// ブロックの表示のみ
+				// 音鳴らす
+				PlaySound(SOUND_LABEL_SKILL_OJYAMA);
 				SetSkillAct(player[i].pos, EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
 			case KAMINARI:
 				// 動作
+				// 音鳴らす
+				PlaySound(SOUND_LABEL_SKILL_THANDER);
 				// ライフ減少は雷とプレイヤーがぶつかったときに
 				SetSkillAct(player[i].pos,EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
