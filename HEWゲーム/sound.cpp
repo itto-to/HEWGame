@@ -40,6 +40,24 @@ PARAM g_aParam[SOUND_LABEL_MAX] =
 	{"data/SE/shot000.wav", false},			// 弾発射音
 	{"data/SE/explosion000.wav", false},	// 爆発音
 	{"data/SE/coin000.wav", false},			// コイン音
+	{"data/SE/カウント音.wav",false},		// カウント音
+	{"data/SE/ゲームスタート_画面遷移音.wav",false},// ゲームスタート
+	{"data/SE/ゲームセット音.wav",false},// ゲームセット
+	{"data/SE/スキルゲージ_ゲージたまった時.wav",false},// スキルゲージがた
+	{"data/SE/スキルゲージ_蓄積音.wav",false},// スキルゲージ蓄積
+	{"data/SE/スキル使用_お邪魔ブロック音.wav",false},// おジャマスキル発
+	{"data/SE/スキル使用_スピードDOWN音.wav",false},// 減速
+	{"data/SE/スキル使用_スピードUP音.wav",false},// 加速
+	{"data/SE/スキル使用_ライブ奪いサンダー音.wav",false},// 雷
+	{"data/SE/スタート時_連打音.wav",false},// 連打音
+	{"data/SE/プレイヤーミス時_ダメージ音.wav",false},// ダメージ音
+	{"data/SE/プレイヤーライフ0時音.wav",false},// ライフ0の音
+	{"data/SE/ポーズ音.wav",false},// ポーズ音
+	{"data/SE/ミニマム音.wav",false},// ミニマム音
+	{"data/SE/リザルト音_1.wav",false},// リザルト音１
+	{"data/SE/リザルト音_2（1のあとにくっつける）.wav",false},// リザルト音2
+	{"data/SE/小ジャンプ音.wav",false},// 小ジャンプ
+	{"data/SE/大ジャンプ音.wav",false},// 大ジャンプ
 };
 
 //=============================================================================

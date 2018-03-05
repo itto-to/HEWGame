@@ -43,6 +43,15 @@ typedef struct
 
 }SKILL_FLAG;
 
+typedef enum
+{
+	SPEEDCHANGE,
+	OJYAMA,
+	KAMINARI,
+	SKILLEFFECT_MAX
+
+}SKILLEFFECT;
+
 //**************************************************************
 // プロトタイプ宣言
 //**************************************************************
