@@ -64,5 +64,6 @@ void SetColorSkill(void);
 void GetSkill(void);
 void SkillReset(int no);
 SKILL *GetSkillWk(int no);
+void skillwinner(int no);
 
 #endif

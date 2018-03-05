@@ -547,7 +547,27 @@ void SkillAct(int player_no)
 	// テクスチャのセット
 }
 
+//****************************************************
+// void skillwinner(int no)
+// 与えられた番号のみ権限付与しその他剥奪
+//****************************************************
+void skillwinner(int no)
+{
+	PLAYER *player = GetPlayer(0);
 
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		if(i == no)
+		{
+			player[i].kengen = true;
+		}
+		else
+		{
+			player[i].kengen = false;
+			SkillReset(i);
+		}
+	}
+}
 
 
 //*******************************************************************************
