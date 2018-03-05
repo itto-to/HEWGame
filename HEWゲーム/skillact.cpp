@@ -22,10 +22,6 @@
 #define OJYAMA		("data/TEXTURE/testimage.png")				// おジャマブロック
 #define KAMINARI	("data/TEXTURE/testimage.png")				// 雷の
 
-// 秒数
-#define FPS			(60)			// 1秒のフレーム数
-#define ACTTIME_LV1	(5*FPS)			// スキルレベル1効果発動時間
-#define ACTTIME_LV2	(7*FPS)			// スキルレベル2効果発動時間
 
 // サイズ
 #define UPEFFECT_HEIGHT	(50)

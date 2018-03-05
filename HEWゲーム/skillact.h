@@ -12,6 +12,14 @@
 #include "main.h"
 
 //*************************************************
+// マクロ定義
+//*************************************************
+// 秒数
+#define FPS			(60)			// 1秒のフレーム数
+#define ACTTIME_LV1	(5*FPS)			// スキルレベル1効果発動時間
+#define ACTTIME_LV2	(7*FPS)			// スキルレベル2効果発動時間
+
+//*************************************************
 // 構造体定義
 //*************************************************
 typedef struct
@@ -51,6 +59,9 @@ typedef struct
 	D3DXVECTOR3					Kaminari_move;
 	D3DXVECTOR3					Kaminari_rot;
 	D3DXMATRIX					Kaminari_mtxWorld;
+
+	int							SpeedTime;							// スピード変化のカウント
+	int							OjyamaTime;						// おジャマブロック出現時
 
 
 } SKILLACT;

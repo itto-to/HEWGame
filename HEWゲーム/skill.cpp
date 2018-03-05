@@ -10,7 +10,9 @@
 //***************************************************************
 #include "skill.h"
 #include <time.h>
-
+#include "stage.h"
+#include "skillact.h"
+#include "player.h"
 //***************************************************************
 // マクロ定義
 //***************************************************************
@@ -37,6 +39,14 @@
 
 // その他ゲージ関連
 #define SKILL_LEVELUP	(5)			// レベルアップに必要な値
+
+// スキルの加速及び減速
+#define LANESPEED_UP	(0.5f)
+#define LANESPEED_DOWN	(0.1f)
+
+
+#define SPEED_LIFE
+
 //***************************************************************
 // プロトタイプ宣言
 //***************************************************************
@@ -173,7 +183,7 @@ void UpdateSkill(float gageup)
 		if(skillget_count >= 2)
 		{
 			skillcheck_ok = false;			// 権利の所有者は1人だけではない
-			GetSkill(0);
+			GetSkill();
 		}
 		else
 		{
@@ -519,12 +529,16 @@ void SkillReset(int no)
 //************************************************************************************************
 void SkillAct(int player_no)
 {
+	PLAYER *player = GetPlayer(0);
+	LANE *lane = GetLane(0);
 	srand((unsigned)time(NULL));
 	int randum;
 
 	// 効果の発動
+	// 各プレイヤーごとに効果を発動していく
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
+		// スキルレベルで分岐させたい
 		switch(skillWk.lv)
 		{
 		case SPEEDCHANGE:
@@ -535,12 +549,22 @@ void SkillAct(int player_no)
 			case 0:
 
 				// 加速
-				g_lane[no].speed_factor
+				lane[i].speed_factor += LANESPEED_UP;
+				SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+				// 時間設定
+
 				break;
 			case 1:
 				// 減速
+				lane[i].speed_factor -= LANESPEED_DOWN;
+				SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 				break;
 			}
+			break;
+
+		case OJYAMA:
+			// 動作
+
 		}
 	}
 	// 効果を発動

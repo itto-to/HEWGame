@@ -26,11 +26,10 @@ typedef struct
 	LPDIRECT3DTEXTURE9			Texture_waku;
 	LPDIRECT3DVERTEXBUFFER9		Buff_bar;
 	LPDIRECT3DVERTEXBUFFER9		Buff_waku;
-	float					gage;								// 今のゲージの値
-	float					gage_lvup;							// レベルアップに必要な値
-	int						lv;									// スキルのレベル
-	bool					kengen;								// 権限は既に割りふてられている？
-
+	float						gage;								// 今のゲージの値
+	float						gage_lvup;							// レベルアップに必要な値
+	int							lv;									// スキルのレベル
+	bool						kengen;								// 権限は既に割りふてられている？
 
 }SKILL;
 
