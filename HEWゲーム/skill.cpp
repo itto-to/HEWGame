@@ -98,7 +98,8 @@ HRESULT InitSkill(void)
 
 	// まだ権限は割り振られていない
 	skillWk.kengen = false;
-
+	// まだスキルは実行状態ではない
+	skillWk.moving = false;
 	return S_OK;
 
 }
@@ -209,12 +210,54 @@ void UpdateSkill(float gageup)
 //****************************************************************
 void UpdateSkillAct(void)
 {
-	SKILLACT *skillactWk = GetSkillact(0);
+	LANE *lane = GetLane(0);
+	SKILLACT *skillactWk = GetSkillAct(0);
 
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
+		// 実行状態なら処理を行う
 		if(skillactWk[i].Up_active == true)
 		{
+			// 実行時間を減らし0以下なら終了
+			skillactWk[i].SpeedTime--;
+			if(skillactWk[i].SpeedTime <= 0)
+			{//	加速状態なので減速して元の速度に戻す
+				lane[i].speed_factor -= LANESPEED_UP;
+				skillactWk[i].Up_active = false;
+				// 実行終了！フラグを元に戻す
+				skillWk.moving = false;
+			}
+		}
+		if(skillactWk[i].Down_active == true)
+		{	// 実行時間を減らして0以下なら終了
+			skillactWk[i].SpeedTime--;
+			if(skillactWk[i].SpeedTime <= 0)
+			{// 減速状態なので加速して元の速度に戻す
+				lane[i].speed_factor += LANESPEED_DOWN;
+				skillactWk[i].Down_active = false;
+				// 実行終了！フラグを元に戻す
+				skillWk.moving = false;
+
+			}
+			
+		}
+
+		if(skillactWk[i].Ojyama_active == true)
+		{
+			// 実行時間を減らして0以下なら終了
+			skillactWk[i].OjyamaTime--;
+
+			if(skillactWk[i].OjyamaTime <= 0)
+			{
+				skillactWk[i].Ojyama_active = false;
+				skillWk.moving = false;
+			}
+		}
+
+		if(skillactWk[i].Kaminari_active == true)
+		{
+			skillactWk[i].Kaminari_pos.y -= KAMINARI_SPEED;
+			//
 		}
 	}
 }
@@ -561,60 +604,67 @@ void SkillAct(int player_no)
 	srand((unsigned)time(NULL));
 	int randum;
 
-	// 効果の発動
-	// 各プレイヤーごとに効果を発動していく
-	for(int i = 0; i < MAX_PLAYER; i++)
+	// スキル発動中の場合実行されない
+	if(skillWk.moving != true)
 	{
-		// スキル発動者ははじく
-		if(i != player_no)
+		// 効果発動時に権限を失う
+		player[player_no].kengen = false;
+		SkillReset(player_no);
+
+		// 効果の発動
+		// 各プレイヤーごとに効果を発動していく
+		for(int i = 0; i < MAX_PLAYER; i++)
 		{
-			// スキルレベルで分岐させたい
-			switch(skillWk.lv)
+			// スキル発動者ははじく
+			if(i != player_no)
 			{
-			case SPEEDCHANGE:
-				// 動作
-				randum = rand() % 2;
-				switch(randum)
+				// スキルレベルで分岐させたい
+				switch(skillWk.lv)
 				{
-				case 0:
+				case SPEEDCHANGE:
+					// 動作
+					randum = rand() % 2;
+					switch(randum)
+					{
+					case 0:
 
-					// 加速
-					lane[i].speed_factor += LANESPEED_UP;
-					SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-					// 音鳴らす
-					PlaySound(SOUND_LABEL_SKILL_SPEEDUP);
-					// 時間設定
+						// 加速
+						lane[i].speed_factor += LANESPEED_UP;
+						SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+						// 音鳴らす
+						PlaySound(SOUND_LABEL_SKILL_SPEEDUP);
+						// 時間設定
 
+						break;
+					case 1:
+						// 減速
+						lane[i].speed_factor -= LANESPEED_DOWN;
+						SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+						// 音鳴らす
+						PlaySound(SOUND_LABEL_SKILL_SPEEDDOWN);
+						break;
+					}
 					break;
-				case 1:
-					// 減速
-					lane[i].speed_factor -= LANESPEED_DOWN;
-					SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+
+				case OJYAMA:
+					// 動作
+					// ブロックの表示のみ
 					// 音鳴らす
-					PlaySound(SOUND_LABEL_SKILL_SPEEDDOWN);
-					break;
+					PlaySound(SOUND_LABEL_SKILL_OJYAMA);
+					SetSkillAct(player[i].pos, EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+
+				case KAMINARI:
+					// 動作
+					// 音鳴らす
+					PlaySound(SOUND_LABEL_SKILL_THANDER);
+					// ライフ減少は雷とプレイヤーがぶつかったときに
+					SetSkillAct(player[i].pos, EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+
 				}
-				break;
-
-			case OJYAMA:
-				// 動作
-				// ブロックの表示のみ
-				// 音鳴らす
-				PlaySound(SOUND_LABEL_SKILL_OJYAMA);
-				SetSkillAct(player[i].pos, EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
-			case KAMINARI:
-				// 動作
-				// 音鳴らす
-				PlaySound(SOUND_LABEL_SKILL_THANDER);
-				// ライフ減少は雷とプレイヤーがぶつかったときに
-				SetSkillAct(player[i].pos,EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
 			}
 		}
 	}
-	// 効果を発動
-	// テクスチャのセット
+
 }
 
 //****************************************************

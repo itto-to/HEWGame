@@ -30,6 +30,7 @@ typedef struct
 	float						gage_lvup;							// レベルアップに必要な値
 	int							lv;									// スキルのレベル
 	bool						kengen;								// 権限は既に割りふてられている？
+	bool						moving;								// スキルは今実行されている？
 
 }SKILL;
 
