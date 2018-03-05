@@ -522,7 +522,7 @@ void SkillAct(int player_no)
 	switch(skillWk.lv)
 	{
 	case SPEEDCHANGE:
-
+		// ìÆçÏ
 
 		case 
 	}
