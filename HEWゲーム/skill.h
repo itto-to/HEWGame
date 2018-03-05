@@ -54,5 +54,6 @@ HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice);
 void SetColorSkill(void);
 void GetSkill(int no);
 void SkillReset(int no);
+SKILL *GetSkillWk(int no);
 
 #endif
