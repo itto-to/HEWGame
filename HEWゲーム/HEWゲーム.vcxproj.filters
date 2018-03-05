@@ -26,6 +26,7 @@
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="title.cpp" />
     <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="skillact.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="background.h" />
@@ -55,6 +56,7 @@
     <ClInclude Include="timer.h" />
     <ClInclude Include="title.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="skillact.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HEWゲーム.rc" />
