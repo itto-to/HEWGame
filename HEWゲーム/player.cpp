@@ -27,8 +27,8 @@
 
 #define TEXTURE_PLAYER_KNIGHT		"data/TEXTURE/player_knight.png"	// 騎士テクスチャ名
 #define TEXTURE_PLAYER_THIEF		"data/TEXTURE/player_thief.png"		// 盗賊テクスチャ名
-#define TEXTURE_PLAYER_COOK			"data/TEXTURE/player_cook.jpg"		// 料理人テクスチャ名
-#define TEXTURE_PLAYER_WIZARD		"data/TEXTURE/player_wizard.jpg"	// 魔法使いテクスチャ名
+#define TEXTURE_PLAYER_COOK			"data/TEXTURE/player_cook.png"		// 料理人テクスチャ名
+#define TEXTURE_PLAYER_WIZARD		"data/TEXTURE/player_wizard.png"	// 魔法使いテクスチャ名
 #define TEXTURE_DASH_GAUGE			"data/TEXTURE/lifegreen.png"		// ダッシュゲージテクスチャ名
 
 #define PLAYER_POS_X		(400.0f)					// プレイヤーのX座標

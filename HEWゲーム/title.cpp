@@ -6,6 +6,7 @@
 //=============================================================================
 #include "title.h"
 
+#include "main.h"
 #include "debugproc.h"
 #include "fade.h"
 #include "input.h"
@@ -18,15 +19,15 @@
 #define	TEXTURE_TITLE_LOGO	"data/TEXTURE/title_logo.png"	// 読み込むテクスチャファイル名
 #define	TEXTURE_LOGO_START	"data/TEXTURE/press_start.png"	// 読み込むテクスチャファイル名
 
-#define	TITLE_LOGO_POS_X		(320)		// タイトルロゴの位置(X座標)
-#define	TITLE_LOGO_POS_Y		(40)		// タイトルロゴの位置(Y座標)
-#define	TITLE_LOGO_WIDTH		(640)		// タイトルロゴの幅
-#define	TITLE_LOGO_HEIGHT		(640)		// タイトルロゴの高さ
+#define	TITLE_LOGO_POS_X		(SCREEN_CENTER_X)		// タイトルロゴの位置(X座標)
+#define	TITLE_LOGO_POS_Y		(SCREEN_CENTER_Y)		// タイトルロゴの位置(Y座標)
+#define	TITLE_LOGO_WIDTH		(353.0f)		// タイトルロゴの幅
+#define	TITLE_LOGO_HEIGHT		(172.0f)		// タイトルロゴの高さ
 
-#define	START_POS_X				(400)		// スタートボタンの位置(X座標)
-#define	START_POS_Y				(720)		// スタートボタンの位置(Y座標)
-#define	START_WIDTH				(480)		// スタートボタンの幅
-#define	START_HEIGHT			(120)		// スタートボタンの高さ
+#define	START_POS_X				(SCREEN_CENTER_X)		// スタートボタンの位置(X座標)
+#define	START_POS_Y				(SCREEN_CENTER_Y)		// スタートボタンの位置(Y座標)
+#define	START_WIDTH				(353.0f)		// スタートボタンの幅
+#define	START_HEIGHT			(172.0f)		// スタートボタンの高さ
 
 #define	COUNT_APPERA_START		(60)		// スタートボタン出現までの時間
 #define	INTERVAL_DISP_START		(60)		// スタートボタン点滅の時間

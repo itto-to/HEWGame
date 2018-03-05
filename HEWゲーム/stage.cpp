@@ -239,10 +239,10 @@ void UpdateStage(void)
 		UpdateStageCountDown();
 		break;
 	case STAGE_STATE_STARTDASH:
-		UpdateStageGameplay();
+		UpdateStageStartDash();
 		break;
 	case STAGE_STATE_GAMEPLAY:
-		UpdateStageStartDash();
+		UpdateStageGameplay();
 		break;
 	}
 
@@ -263,6 +263,7 @@ void UpdateStageCountDown(void)
 	{
 		// 一定カウントでスタートダッシュ状態へ
 		g_stage_state = STAGE_STATE_STARTDASH;
+		PlaySound(SOUND_LABEL_BGM000);
 	}
 }
 
