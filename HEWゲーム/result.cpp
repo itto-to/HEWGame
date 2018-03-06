@@ -19,7 +19,7 @@
 #define	TEXTURE_RESULT_LOGO	"data/TEXTURE/result_logo.png"	// 読み込むテクスチャファイル名
 
 #define	RESULT_LOGO_POS_X	(240)		// リザルトロゴの位置(X座標)
-#define	RESULT_LOGO_POS_Y	(320)		// リザルトロゴの位置(Y座標)
+#define	RESULT_LOGO_POS_Y	(0)		// リザルトロゴの位置(Y座標)
 #define	RESULT_LOGO_WIDTH	(800)		// リザルトロゴの幅
 #define	RESULT_LOGO_HEIGHT	(240)		// リザルトロゴの高さ
 
@@ -28,7 +28,7 @@
 
 
 // ナンバー
-#define RESULTNO_HEIGHT	(SCREEN_HEIGHT /4)
+#define RESULTNO_HEIGHT	(SCREEN_HEIGHT /4)				// noの長さ縦
 #define RESULTNO_WIDTH	(SCREEN_HEIGHT /4)
 #define RESULTNO_1	("data/TEXTURE/result_1st.png")
 #define RESULTNO_2	("data/TEXTURE/result_2nd.png")
@@ -40,6 +40,11 @@
 // 順位の表示位置
 #define RANKNO_POS_X			(30.0f)
 
+// リザルト画面に表示されるプレイヤー
+#define	RESULTPLAYER_HEIGHT	(SCREEN_HEIGHT /4)
+#define RESULTPLAYER_WIDTH	(SCREEN_HEIGHT /4/2)
+#define RESULTPLAYER_POS_X	(SCREEN_CENTER_X)
+//#define RESULTPLAYER_POS_Y	(SCREEN_
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -68,6 +73,14 @@ char *resultno_FileName[] =
 	RESULTNO_2,
 	RESULTNO_3,
 	RESULTNO_4,
+};
+
+char *resultplayer_FileName[]=
+{
+	"data/TEXTURE/player_knight.png",
+	"data/TEXTURE/player_thief.png",
+	"data/TEXTURE/player_cook.png",
+	"data/TEXTURE/player_wizard.png",
 };
 
 bool rank_ok[MAX_PLAYER];
@@ -122,6 +135,14 @@ HRESULT InitResult(void)
 			&resultno[i].texture);
 	}
 
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		// 順位表示用テクスチャの読
+		D3DXCreateTextureFromFile(pDevice,
+			resultplayer_FileName[i],
+			&resultno[i].player_texture);
+	}
+
 	checkcount = MAX_PLAYER;
 
 	return S_OK;
@@ -162,6 +183,15 @@ void UninitResult(void)
 		{// 開放
 			resultno[i].buff->Release();
 			resultno[i].buff = NULL;
+		}
+	}
+
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		if(resultno[i].player_texture != NULL)
+		{
+			resultno[i].player_buff->Release();
+			resultno[i].player_buff = NULL;
 		}
 	}
 }
@@ -234,7 +264,7 @@ void DrawResult(void)
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
 
-	// てすと　らんく
+	// 順位
 	// 頂点バッファをデバイスのデータストリームにバインド
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
@@ -252,6 +282,23 @@ void DrawResult(void)
 		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
 	}
+
+	// 順位表示用のプレイヤー読み込み
+	for(int no = 0; no < MAX_PLAYER; no++)
+	{
+		pDevice->SetStreamSource(0, resultno[no].player_buff, 0, sizeof(VERTEX_2D));
+
+		// 頂点フォーマットの設定
+		pDevice->SetFVF(FVF_VERTEX_2D);
+
+		// テクスチャの設定
+		pDevice->SetTexture(0, resultno[no].player_texture);
+
+		// ポリゴンの描画
+		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+
+	}
+
 
 }
 
@@ -400,10 +447,59 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 			resultno[i].buff->Unlock();
 		}
 	}
-	/*for(int i = 0; i < MAX_RANK; i++)
+	
+
+	//++++++++++++++++++++++++++++++++++++++++
+	// リザルト画面に表示するためのプレイヤー
+	//++++++++++++++++++++++++++++++++++++++++
+	for(int i = 0; i < MAX_PLAYER; i++)
 	{
-		MakeVertex(pDevice, &resultno[i].buff, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), RESULTNO_WIDTH, RESULTNO_HEIGHT);
-	}*/
+		if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用に確保するバッファサイズ(バイト単位)
+			D3DUSAGE_WRITEONLY,			// 頂点バッファの使用法　
+			FVF_VERTEX_2D,				// 使用する頂点フォーマット
+			D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラスを指定
+			&resultno[i].player_buff,		// 頂点バッファインターフェースへのポインタ
+			NULL)))						// NULLに設定
+		{
+			return E_FAIL;
+		}
+
+		{//頂点バッファの中身を埋める
+			VERTEX_2D *pVtx;
+
+			// 頂点データの範囲をロックし、頂点バッファへのポインタを取得
+			resultno[i].player_buff->Lock(0, 0, (void**)&pVtx, 0);
+
+			// 頂点座標の設定
+			pVtx[0].vtx = D3DXVECTOR3(RESULTNO_WIDTH          , 0.0f + (i*RESULTPLAYER_HEIGHT), 0.0f);
+			pVtx[1].vtx = D3DXVECTOR3(RESULTNO_WIDTH+ RESULTPLAYER_WIDTH, 0.0f + (i*RESULTPLAYER_HEIGHT), 0.0f);
+			pVtx[2].vtx = D3DXVECTOR3(RESULTNO_WIDTH          , RESULTPLAYER_HEIGHT + (i*RESULTPLAYER_HEIGHT), 0.0f);
+			pVtx[3].vtx = D3DXVECTOR3(RESULTNO_WIDTH+ RESULTPLAYER_WIDTH, RESULTPLAYER_HEIGHT + (i*RESULTPLAYER_HEIGHT), 0.0f);
+
+			// テクスチャのパースペクティブコレクト用
+			pVtx[0].rhw =
+				pVtx[1].rhw =
+				pVtx[2].rhw =
+				pVtx[3].rhw = 1.0f;
+
+			// 反射光の設定
+			pVtx[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+
+			// テクスチャ座標の設定
+			pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+			pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+			pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+			pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+
+			// 頂点データをアンロックする
+			resultno[i].player_buff->Unlock();
+		}
+	}
+
+
 	return S_OK;
 }
 
