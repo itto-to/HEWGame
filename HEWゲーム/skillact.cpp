@@ -17,10 +17,10 @@
 //*****************************************************************
 
 // エフェクト
-#define UPEFFECT	("data/TEXTURE/testimage.png")				// 速度上昇
-#define DOWNEFFECT	("data/TEXTURE/testimage.png")				// 減速
-#define OJYAMA		("data/TEXTURE/testimage.png")				// おジャマブロック
-#define KAMINARI	("data/TEXTURE/testimage.png")				// 雷の
+#define UPEFFECT	("data/TEXTURE/icon_speed_up.png")				// 速度上昇
+#define DOWNEFFECT	("data/TEXTURE/icon_speed_down.png")				// 減速
+#define OJYAMA		("data/TEXTURE/skill_lv2_block.png")				// おジャマブロック
+#define KAMINARI	("data/TEXTURE/skill_lv3_thunder.png")				// 雷の
 
 
 // サイズ
@@ -972,9 +972,11 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 		break;
 
 	case EFFECT_OJYAMA:
-		// noは発動したプレイヤーの番号
+		// 
+		for(int i = 0; i < OJYAMASET_MAX; i++)
+		{
 		skillactWk[player_no].Ojyama_rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		skillactWk[player_no].Ojyama_pos = pos;
+		skillactWk[player_no].Ojyama_pos = D3DXVECTOR3((i*OJYAMA_WIDE),pos.y,pos.z);
 		skillactWk[player_no].Ojyama_scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 		skillactWk[player_no].Ojyama_move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		skillactWk[player_no].Ojyama_active = true;
@@ -984,7 +986,9 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 
 		// 頂点カラーの設定
 		SetColorSkillAct(player_no, effect, player_no, col);
+		}
 		break;
+
 
 	case EFFECT_KAMINARI:
 		// noは発動したプレイヤーの番号
