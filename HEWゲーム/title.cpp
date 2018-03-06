@@ -226,17 +226,17 @@ void DrawTitle(void)
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
 
-	// 頂点バッファをデバイスのデータストリームにバインド
-	pDevice->SetStreamSource(0, g_pD3DVtxBuffTitleLogo, 0, sizeof(VERTEX_2D));
+	//// 頂点バッファをデバイスのデータストリームにバインド
+	//pDevice->SetStreamSource(0, g_pD3DVtxBuffTitleLogo, 0, sizeof(VERTEX_2D));
 
-	// 頂点フォーマットの設定
-	pDevice->SetFVF(FVF_VERTEX_2D);
+	//// 頂点フォーマットの設定
+	//pDevice->SetFVF(FVF_VERTEX_2D);
 
-	// テクスチャの設定
-	pDevice->SetTexture(0, g_pD3DTextureTitleLogo);
+	//// テクスチャの設定
+	//pDevice->SetTexture(0, g_pD3DTextureTitleLogo);
 
-	// ポリゴンの描画
-	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+	//// ポリゴンの描画
+	//pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
 	if(g_bDispStart == true)
 	{
