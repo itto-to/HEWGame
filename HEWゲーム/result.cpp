@@ -27,8 +27,8 @@
 
 
 // ナンバー
-#define RESULTNO_HEIGHT	(70)
-#define RESULTNO_WIDTH	(70)
+#define RESULTNO_HEIGHT	(SCREEN_HEIGHT /4)
+#define RESULTNO_WIDTH	(SCREEN_HEIGHT /4)
 #define RESULTNO_1	("data/TEXTURE/result_1st.png")
 #define RESULTNO_2	("data/TEXTURE/result_2nd.png")
 #define RESULTNO_3	("data/TEXTURE/result_3rd.png")
@@ -82,6 +82,11 @@ void InitCount(void)
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
 		rank_ok[i] = false;
+	}
+
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		resultWk[i].rank = 0;			// 全員のランクを1位に
 	}
 }
 //=============================================================================
@@ -213,6 +218,7 @@ void DrawResult(void)
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
 	// ロゴ
+	//************************************************************************************
 
 	// 頂点バッファをデバイスのデータストリームにバインド
 	pDevice->SetStreamSource(0, g_pD3DVtxBuffResultLogo, 0, sizeof(VERTEX_2D));
@@ -226,27 +232,26 @@ void DrawResult(void)
 	// ポリゴンの描画
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
-	// プレイヤーの順位によって描画するテクスチャが変わる
-	// DrawMesh関数
+
+	// てすと　らんく
+	// 頂点バッファをデバイスのデータストリームにバインド
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
-		// そのプレイヤーに対応するresultWk[i].rankの中身によって表示テクスチャがかわる
-		switch(resultWk[i].rank)
-		{
-		case 1:
-			DrawMesh(resultno[0].buff, resultno[0].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-			break;
-		case 2:
-			DrawMesh(resultno[1].buff, resultno[1].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-			break;
-		case 3:
-			DrawMesh(resultno[2].buff, resultno[2].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-			break;
-		case 4:
-			DrawMesh(resultno[3].buff, resultno[3].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-			break;
-		}
+		
+
+		pDevice->SetStreamSource(0, resultno[i].buff, 0, sizeof(VERTEX_2D));
+
+		// 頂点フォーマットの設定
+		pDevice->SetFVF(FVF_VERTEX_2D);
+
+		// テクスチャの設定
+		pDevice->SetTexture(0, resultno[resultWk[i].rank].texture);
+
+		// ポリゴンの描画
+		pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+
 	}
+
 }
 
 //=============================================================================
@@ -344,10 +349,60 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 		g_pD3DVtxBuffResultLogo->Unlock();
 	}
 
-	for(int i = 0; i < MAX_RANK; i++)
+
+	//+++++++++++++++++++++++++++++++
+	// ここからは順位によって変わる
+	//+++++++++++++++++++++++++++++++
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用に確保するバッファサイズ(バイト単位)
+			D3DUSAGE_WRITEONLY,			// 頂点バッファの使用法　
+			FVF_VERTEX_2D,				// 使用する頂点フォーマット
+			D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラスを指定
+			&resultno[i].buff,		// 頂点バッファインターフェースへのポインタ
+			NULL)))						// NULLに設定
+		{
+			return E_FAIL;
+		}
+
+		{//頂点バッファの中身を埋める
+			VERTEX_2D *pVtx;
+
+			// 頂点データの範囲をロックし、頂点バッファへのポインタを取得
+			resultno[i].buff->Lock(0, 0, (void**)&pVtx, 0);
+
+			// 頂点座標の設定
+			pVtx[0].vtx = D3DXVECTOR3(0.0f, 0.0f + (i*RESULTNO_HEIGHT), 0.0f);
+			pVtx[1].vtx = D3DXVECTOR3(RESULTNO_WIDTH, 0.0f + (i*RESULTNO_HEIGHT), 0.0f);
+			pVtx[2].vtx = D3DXVECTOR3(0.0f, RESULTNO_HEIGHT + (i*RESULTNO_HEIGHT), 0.0f);
+			pVtx[3].vtx = D3DXVECTOR3(RESULTNO_WIDTH, RESULTNO_HEIGHT+ (i*RESULTNO_HEIGHT), 0.0f);
+
+			// テクスチャのパースペクティブコレクト用
+			pVtx[0].rhw =
+				pVtx[1].rhw =
+				pVtx[2].rhw =
+				pVtx[3].rhw = 1.0f;
+
+			// 反射光の設定
+			pVtx[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[1].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[2].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+			pVtx[3].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
+
+			// テクスチャ座標の設定
+			pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+			pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+			pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+			pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+
+			// 頂点データをアンロックする
+			resultno[i].buff->Unlock();
+		}
+	}
+	/*for(int i = 0; i < MAX_RANK; i++)
 	{
 		MakeVertex(pDevice, &resultno[i].buff, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), RESULTNO_WIDTH, RESULTNO_HEIGHT);
-	}
+	}*/
 	return S_OK;
 }
 
@@ -388,9 +443,10 @@ void RankCheck(int no, int rank)
 		// キャラクターの生存数を減らす
 		checkcount--;
 		// ランクを決定
-		resultWk[no].rank = rank;
+
+		resultWk[no].rank = rank-1;			// rankの値より1少ない番号が順位
 		// 生きているキャラクターが居ない場合リザルト画面へ
-		if(checkcount <= 1)
+		if(checkcount < 1)
 		{
 			SetFade(FADE_OUT);
 			//PlaySound(SOUND_LABEL_GAMESTART);
