@@ -17,14 +17,18 @@ typedef struct
 	LPDIRECT3DTEXTURE9			resultrank_texture;
 	LPDIRECT3DVERTEXBUFFER9		resultrank_buff;
 
-	LPDIRECT3DTEXTURE9			number_texture;
-	LPDIRECT3DVERTEXBUFFER9		number_buff;
-
-
-
 	int rank;
 
 }RESULT;
+
+typedef struct
+{
+	LPDIRECT3DVERTEXBUFFER9	buff = NULL;
+	LPDIRECT3DTEXTURE9		texture = NULL;
+}RESULTNO;
+
+
+
 
 
 
@@ -35,5 +39,8 @@ HRESULT InitResult(void);
 void UninitResult(void);
 void UpdateResult(void);
 void DrawResult(void);
+RESULT *GetResult(int no);
+void RankCheck(int no, int rank);
+void InitCount(void);
 
 #endif

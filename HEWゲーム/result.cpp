@@ -8,6 +8,8 @@
 #include "input.h"
 #include "fade.h"
 #include "player.h"
+#include "mesh.h"
+#include "game.h"
 
 //*****************************************************************************
 // ƒ}ƒNƒ’è‹`
@@ -22,6 +24,20 @@
 
 #define	COUNT_APPERA_RESULT	(60)		// ƒŠƒUƒ‹ƒgƒƒSoŒ»‚Ü‚Å‚Ì‘Ò‚¿ŠÔ	
 #define	LIMIT_COUNT_WAIT	(60 * 5)	// ‘Ò‚¿ŠÔ
+
+
+// ƒiƒ“ƒo[
+#define RESULTNO_HEIGHT	(70)
+#define RESULTNO_WIDTH	(70)
+#define RESULTNO_1	("data/TEXTURE/result_1st.png")
+#define RESULTNO_2	("data/TEXTURE/result_2nd.png")
+#define RESULTNO_3	("data/TEXTURE/result_3rd.png")
+#define RESULTNO_4	("data/TEXTURE/result_4th.png")
+
+#define MAX_RANK	(4)				// ‚Ñ‚è‚Ì‚¶‚ã‚ñ‚¢
+
+// ‡ˆÊ‚Ì•\¦ˆÊ’u
+#define RANKNO_POS_X			(30.0f)
 
 //*****************************************************************************
 // ƒvƒƒgƒ^ƒCƒvéŒ¾
@@ -39,8 +55,30 @@ LPDIRECT3DVERTEXBUFFER9 g_pD3DVtxBuffResultLogo = NULL;	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒ
 int						g_nCountAppearResult = 0;		// oŒ»‚Ü‚Å‚Ì‘Ò‚¿ŠÔ
 float					g_fAlphaResult = 0.0f;			// ƒŠƒUƒ‹ƒgƒƒS‚Ìƒ¿’l
 int						g_nCountWaitResult = 0;			// ‘Ò‚¿ŠÔ
+int						checkcount ;					// ¶‘¶ƒvƒŒƒCƒ„[”ƒJƒEƒ“ƒg
 RESULT resultWk[MAX_PLAYER];
 
+// ‚±‚±‚©‚çæ‚Í”š‚ğ•\¦‚·‚é‚½‚ß‚Ì‚à‚Ì
+RESULTNO resultno[4];
+
+char *resultno_FileName[]=
+{
+	RESULTNO_1,
+	RESULTNO_2,
+	RESULTNO_3,
+	RESULTNO_4,
+};
+
+
+//*******************************************************
+// void InitCount(void)
+// ƒJƒEƒ“ƒg‰Šú‰»
+// result.cpp‚Ö‚ÌˆÚ“®‚É—˜—p‚·‚écheckcount‚Ì’l‚ğ‰Šú‰»
+//*******************************************************
+void InitCount(void)
+{
+	checkcount = MAX_PLAYER;
+}
 //=============================================================================
 // ‰Šú‰»ˆ—
 //=============================================================================
@@ -64,6 +102,16 @@ HRESULT InitResult(void)
 	D3DXCreateTextureFromFile(pDevice,						// ƒfƒoƒCƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
 								TEXTURE_RESULT_LOGO,		// ƒtƒ@ƒCƒ‹‚Ì–¼‘O
 								&g_pD3DTextureResultLogo);	// “Ç‚İ‚Şƒƒ‚ƒŠ[
+
+	for(int i = 0; i < MAX_RANK; i++)
+	{
+		// ‡ˆÊ•\¦—pƒeƒNƒXƒ`ƒƒ‚Ì“Ç‚İ‚İ
+		D3DXCreateTextureFromFile(pDevice,
+			resultno_FileName[i],
+			&resultno[i].texture);
+	}
+
+	checkcount = MAX_PLAYER;
 
 	return S_OK;
 }
@@ -96,6 +144,15 @@ void UninitResult(void)
 		g_pD3DVtxBuffResultLogo->Release();
 		g_pD3DVtxBuffResultLogo = NULL;
 	}
+
+	for(int i = 0; i < MAX_RANK;i++)
+	{
+		if(resultno[i].texture != NULL)
+		{// ŠJ•ú
+			resultno[i].buff->Release();
+			resultno[i].buff = NULL;
+		}
+	}
 }
 
 //=============================================================================
@@ -123,11 +180,11 @@ void UpdateResult(void)
 		SetFade(FADE_OUT);
 	}
 
-	g_nCountWaitResult++;
+	/*g_nCountWaitResult++;
 	if(g_nCountWaitResult > LIMIT_COUNT_WAIT)
 	{
 		SetFade(FADE_OUT);
-	}
+	}*/
 }
 
 //=============================================================================
@@ -137,8 +194,9 @@ void DrawResult(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+
 	// ’¸“_ƒoƒbƒtƒ@‚ğƒfƒoƒCƒX‚Ìƒf[ƒ^ƒXƒgƒŠ[ƒ€‚ÉƒoƒCƒ“ƒh
-    pDevice->SetStreamSource(0, g_pD3DVtxBuffResult, 0, sizeof(VERTEX_2D));
+	pDevice->SetStreamSource(0, g_pD3DVtxBuffResult, 0, sizeof(VERTEX_2D));
 
 	// ’¸“_ƒtƒH[ƒ}ƒbƒg‚Ìİ’è
 	pDevice->SetFVF(FVF_VERTEX_2D);
@@ -149,8 +207,10 @@ void DrawResult(void)
 	// ƒ|ƒŠƒSƒ“‚Ì•`‰æ
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
+	// ƒƒS
+
 	// ’¸“_ƒoƒbƒtƒ@‚ğƒfƒoƒCƒX‚Ìƒf[ƒ^ƒXƒgƒŠ[ƒ€‚ÉƒoƒCƒ“ƒh
-    pDevice->SetStreamSource(0, g_pD3DVtxBuffResultLogo, 0, sizeof(VERTEX_2D));
+	pDevice->SetStreamSource(0, g_pD3DVtxBuffResultLogo, 0, sizeof(VERTEX_2D));
 
 	// ’¸“_ƒtƒH[ƒ}ƒbƒg‚Ìİ’è
 	pDevice->SetFVF(FVF_VERTEX_2D);
@@ -160,6 +220,28 @@ void DrawResult(void)
 
 	// ƒ|ƒŠƒSƒ“‚Ì•`‰æ
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+
+	// ƒvƒŒƒCƒ„[‚Ì‡ˆÊ‚É‚æ‚Á‚Ä•`‰æ‚·‚éƒeƒNƒXƒ`ƒƒ‚ª•Ï‚í‚é
+	// DrawMeshŠÖ”
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		// ‚»‚ÌƒvƒŒƒCƒ„[‚É‘Î‰‚·‚éresultWk[i].rank‚Ì’†g‚É‚æ‚Á‚Ä•\¦ƒeƒNƒXƒ`ƒƒ‚ª‚©‚í‚é
+		switch(resultWk[i].rank)
+		{
+		case 1:
+			DrawMesh(resultno[0].buff, resultno[0].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+				break;
+		case 2:
+			DrawMesh(resultno[1].buff, resultno[1].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+			break;
+		case 3:
+			DrawMesh(resultno[2].buff, resultno[2].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+			break;
+		case 4:
+			DrawMesh(resultno[3].buff, resultno[3].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+			break;
+		}
+	}
 }
 
 //=============================================================================
@@ -257,53 +339,9 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 		g_pD3DVtxBuffResultLogo->Unlock();
 	}
 
-
-	// ƒLƒƒƒ‰ƒNƒ^[‚Ì’¸“_ƒoƒbƒtƒ@¶¬
-	for(int i = 0; i < MAX_PLAYER; i++)
+	for(int i = 0; i < MAX_RANK; i++)
 	{
-		if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// ’¸“_ƒf[ƒ^—p‚ÉŠm•Û‚·‚éƒoƒbƒtƒ@ƒTƒCƒY(ƒoƒCƒg’PˆÊ)
-			D3DUSAGE_WRITEONLY,			// ’¸“_ƒoƒbƒtƒ@‚Ìg—p–@@
-			FVF_VERTEX_2D,				// g—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg
-			D3DPOOL_MANAGED,			// ƒŠƒ\[ƒX‚Ìƒoƒbƒtƒ@‚ğ•Û‚·‚éƒƒ‚ƒŠƒNƒ‰ƒX‚ğw’è
-			&resultWk[i].resultrank_buff,	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒtƒF[ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
-			NULL)))						// NULL‚Éİ’è
-		{
-			return E_FAIL;
-		}
-
-		{//’¸“_ƒoƒbƒtƒ@‚Ì’†g‚ğ–„‚ß‚é
-			VERTEX_2D *pVtx;
-
-			// ’¸“_ƒf[ƒ^‚Ì”ÍˆÍ‚ğƒƒbƒN‚µA’¸“_ƒoƒbƒtƒ@‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğæ“¾
-			g_pD3DVtxBuffResultLogo->Lock(0, 0, (void**)&pVtx, 0);
-
-			// ’¸“_À•W‚Ìİ’è
-			pVtx[0].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y, 0.0f);
-			pVtx[1].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y, 0.0f);
-			pVtx[2].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
-			pVtx[3].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
-
-			// ƒeƒNƒXƒ`ƒƒ‚Ìƒp[ƒXƒyƒNƒeƒBƒuƒRƒŒƒNƒg—p
-			pVtx[0].rhw =
-				pVtx[1].rhw =
-				pVtx[2].rhw =
-				pVtx[3].rhw = 1.0f;
-
-			// ”½ËŒõ‚Ìİ’è
-			pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-			pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-			pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-			pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-
-			// ƒeƒNƒXƒ`ƒƒÀ•W‚Ìİ’è
-			pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-			pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-			pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-			pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
-
-			// ’¸“_ƒf[ƒ^‚ğƒAƒ“ƒƒbƒN‚·‚é
-			g_pD3DVtxBuffResultLogo->Unlock();
-		}
+		MakeVertex(pDevice, &resultno[i].buff, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), RESULTNO_WIDTH, RESULTNO_HEIGHT);
 	}
 	return S_OK;
 }
@@ -328,4 +366,34 @@ void SetColorResultLogo(void)
 		// ’¸“_ƒf[ƒ^‚ğƒAƒ“ƒƒbƒN‚·‚é
 		g_pD3DVtxBuffResultLogo->Unlock();
 	}
+}
+
+
+//*********************************************************************
+// void RankCheck(void)
+// à–¾: ƒvƒŒƒCƒ„[‚Ìƒ‰ƒCƒt‚ªXV‚ÌŒ‹‰Ê0‚É‚È‚Á‚½ê‡Às‚³‚ê‚é
+//*********************************************************************
+void RankCheck(int no,int rank)
+{
+
+	// ƒLƒƒƒ‰ƒNƒ^[‚Ì¶‘¶”‚ğŒ¸‚ç‚·
+	checkcount--;
+	// ƒ‰ƒ“ƒN‚ğŒˆ’è
+	resultWk[no].rank = rank;
+	// ¶‚«‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚ª‹‚È‚¢ê‡ƒŠƒUƒ‹ƒg‰æ–Ê‚Ö
+	if(checkcount < 1)
+	{
+		SetFade(FADE_OUT);
+		//PlaySound(SOUND_LABEL_GAMESTART);
+	}
+}
+
+//*********************************************************************
+// RESULT GetResult(int no)
+// ƒQƒbƒgŠÖ”
+// w’è‚³‚ê‚½”Ô†‚ğ•Ô‚·
+//*********************************************************************
+RESULT *GetResult(int no)
+{
+	return &resultWk[no];
 }

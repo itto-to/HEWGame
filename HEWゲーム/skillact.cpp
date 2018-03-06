@@ -19,10 +19,17 @@
 //*****************************************************************
 
 // エフェクト
+<<<<<<< HEAD
 #define TEXTURE_UPEFFECT	("data/TEXTURE/icon_speed_up.png")				// 速度上昇
 #define TEXTURE_DOWNEFFECT	("data/TEXTURE/icon_speed_down.png")			// 減速
 #define TEXTURE_OJYAMA		("data/TEXTURE/skill_lv2_block.png")			// おジャマブロック
 #define TEXTURE_KAMINARI	("data/TEXTURE/skill_lv3_thunder.png")			// 雷
+=======
+#define UPEFFECT	("data/TEXTURE/icon_speed_up.png")				// 速度上昇
+#define DOWNEFFECT	("data/TEXTURE/icon_speed_down.png")				// 減速
+#define OJYAMA		("data/TEXTURE/skill_lv2_block.png")				// おジャマブロック
+#define KAMINARI	("data/TEXTURE/skill_lv3_thunder.png")				// 雷の
+>>>>>>> 4f3be628524b288d711aa7094ab03acd72035386
 
 
 // サイズ
@@ -218,6 +225,7 @@ void DrawSkillAct(void)
 		}
 	}
 
+<<<<<<< HEAD
 	// おじゃまブロック
 	for (int no = 0; no < NumPlayer(); no++)
 	{
@@ -236,6 +244,128 @@ void DrawSkillAct(void)
 				offset.x += OJYAMA_OFFSET_WIDTH;
 			}
 		}
+=======
+	// ojyama
+	for(int no = 0; no < MAX_PLAYER; no++)
+	{
+		// 実行状態の場合描画
+		if(skillactWk[no].Ojyama_active == true)
+		{
+			// ワールドマトリックスの初期化
+			D3DXMatrixIdentity(&skillactWk[no].Ojyama_mtxWorld);
+
+			// ビューマトリックスを取得
+			mtxView = GetMtxView();
+
+			// ポリゴンを正面に向ける
+#if 1
+			// 逆行列をもとめる
+			D3DXMatrixInverse(&skillactWk[no].Ojyama_mtxWorld, NULL, &mtxView);
+			skillactWk[no].Ojyama_mtxWorld._41 = 0.0f;
+			skillactWk[no].Ojyama_mtxWorld._42 = 0.0f;
+			skillactWk[no].Ojyama_mtxWorld._43 = 0.0f;
+#else
+			skillactWk[no].Ojyama_mtxWorld._11 = mtxView._11;
+			skillactWk[no].Ojyama_mtxWorld._12 = mtxView._21;
+			skillactWk[no].Ojyama_mtxWorld._13 = mtxView._31;
+			skillactWk[no].Ojyama_mtxWorld._21 = mtxView._12;
+			skillactWk[no].Ojyama_mtxWorld._22 = mtxView._22;
+			skillactWk[no].Ojyama_mtxWorld._23 = mtxView._32;
+			skillactWk[no].Ojyama_mtxWorld._31 = mtxView._13;
+			skillactWk[no].Ojyama_mtxWorld._32 = mtxView._23;
+			skillactWk[no].Ojyama_mtxWorld._33 = mtxView._33;
+#endif
+
+			// スケールを反映
+			D3DXMatrixScaling(&mtxScale, skillactWk[no].Ojyama_scl.x,
+				skillactWk[no].Ojyama_scl.y,
+				skillactWk[no].Ojyama_scl.z);
+			D3DXMatrixMultiply(&skillactWk[no].Ojyama_mtxWorld, &skillactWk[no].Ojyama_mtxWorld, &mtxScale);
+
+			// 移動を反映
+			D3DXMatrixTranslation(&mtxTranslate, skillactWk[no].Ojyama_pos.x,
+				skillactWk[no].Ojyama_pos.y,
+				skillactWk[no].Ojyama_pos.z);
+			D3DXMatrixMultiply(&skillactWk[no].Ojyama_mtxWorld, &skillactWk[no].Ojyama_mtxWorld, &mtxTranslate);
+
+			// ワールドマトリックスの設定
+			pDevice->SetTransform(D3DTS_WORLD, &skillactWk[no].Ojyama_mtxWorld);
+
+
+			// ライフゲージを描画
+			{
+				// 頂点バッファをデバイスのストリームにバインド
+				pDevice->SetStreamSource(0, skillactWk[no].Ojyama_buff, 0, sizeof(VERTEX_2D));
+				// 頂点フォーマットの設定
+				pDevice->SetFVF(FVF_VERTEX_2D);
+				// テクスチャの設定
+				pDevice->SetTexture(0, skillactWk[no].Ojyama_texture);
+				// ポリゴンの描画
+				pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+			}
+		}
+	}
+
+	// Kaminari
+	for(int no = 0; no < MAX_PLAYER; no++)
+	{
+		// 実行状態の場合描画
+		if(skillactWk[no].Kaminari_active == true)
+		{
+			// ワールドマトリックスの初期化
+			D3DXMatrixIdentity(&skillactWk[no].Kaminari_mtxWorld);
+
+			// ビューマトリックスを取得
+			mtxView = GetMtxView();
+
+			// ポリゴンを正面に向ける
+#if 1
+			// 逆行列をもとめる
+			D3DXMatrixInverse(&skillactWk[no].Kaminari_mtxWorld, NULL, &mtxView);
+			skillactWk[no].Kaminari_mtxWorld._41 = 0.0f;
+			skillactWk[no].Kaminari_mtxWorld._42 = 0.0f;
+			skillactWk[no].Kaminari_mtxWorld._43 = 0.0f;
+#else
+			skillactWk[no].Kaminari_mtxWorld._11 = mtxView._11;
+			skillactWk[no].Kaminari_mtxWorld._12 = mtxView._21;
+			skillactWk[no].Kaminari_mtxWorld._13 = mtxView._31;
+			skillactWk[no].Kaminari_mtxWorld._21 = mtxView._12;
+			skillactWk[no].Kaminari_mtxWorld._22 = mtxView._22;
+			skillactWk[no].Kaminari_mtxWorld._23 = mtxView._32;
+			skillactWk[no].Kaminari_mtxWorld._31 = mtxView._13;
+			skillactWk[no].Kaminari_mtxWorld._32 = mtxView._23;
+			skillactWk[no].Kaminari_mtxWorld._33 = mtxView._33;
+#endif
+
+			// スケールを反映
+			D3DXMatrixScaling(&mtxScale, skillactWk[no].Kaminari_scl.x,
+				skillactWk[no].Kaminari_scl.y,
+				skillactWk[no].Kaminari_scl.z);
+			D3DXMatrixMultiply(&skillactWk[no].Kaminari_mtxWorld, &skillactWk[no].Kaminari_mtxWorld, &mtxScale);
+
+			// 移動を反映
+			D3DXMatrixTranslation(&mtxTranslate, skillactWk[no].Kaminari_pos.x,
+				skillactWk[no].Kaminari_pos.y,
+				skillactWk[no].Kaminari_pos.z);
+			D3DXMatrixMultiply(&skillactWk[no].Kaminari_mtxWorld, &skillactWk[no].Kaminari_mtxWorld, &mtxTranslate);
+
+			// ワールドマトリックスの設定
+			pDevice->SetTransform(D3DTS_WORLD, &skillactWk[no].Kaminari_mtxWorld);
+
+
+			// ライフゲージを描画
+			{
+				// 頂点バッファをデバイスのストリームにバインド
+				pDevice->SetStreamSource(0, skillactWk[no].Kaminari_buff, 0, sizeof(VERTEX_2D));
+				// 頂点フォーマットの設定
+				pDevice->SetFVF(FVF_VERTEX_2D);
+				// テクスチャの設定
+				pDevice->SetTexture(0, skillactWk[no].Kaminari_texture);
+				// ポリゴンの描画
+				pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+			}
+		}
+>>>>>>> 4f3be628524b288d711aa7094ab03acd72035386
 	}
 
 	// カミナリ
@@ -996,9 +1126,11 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 		break;
 
 	case EFFECT_OJYAMA:
-		// noは発動したプレイヤーの番号
+		// 
+		for(int i = 0; i < OJYAMASET_MAX; i++)
+		{
 		skillactWk[player_no].Ojyama_rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		skillactWk[player_no].Ojyama_pos = pos;
+		skillactWk[player_no].Ojyama_pos = D3DXVECTOR3((i*OJYAMA_WIDE),pos.y,pos.z);
 		skillactWk[player_no].Ojyama_scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 		skillactWk[player_no].Ojyama_move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		skillactWk[player_no].Ojyama_active = true;
@@ -1006,7 +1138,9 @@ int SetSkillAct(D3DXVECTOR3 pos,int effect,int player_no, D3DXCOLOR col)
 
 		// 頂点カラーの設定
 		SetColorSkillAct(player_no, effect, player_no, col);
+		}
 		break;
+
 
 	case EFFECT_KAMINARI:
 		// noは発動したプレイヤーの番号
