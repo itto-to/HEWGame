@@ -15,6 +15,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
+#define BUTTON_GAME_START	(BUTTON_START)
+
 #define	TEXTURE_TITLE		"data/TEXTURE/bg_title.png"		// 読み込むテクスチャファイル名
 #define	TEXTURE_TITLE_LOGO	"data/TEXTURE/title_logo.png"	// 読み込むテクスチャファイル名
 #define	TEXTURE_LOGO_START	"data/TEXTURE/press_start.png"	// 読み込むテクスチャファイル名
@@ -172,9 +174,19 @@ void UpdateTitle(void)
 		}
 	}
 
-	if(GetKeyboardTrigger(DIK_RETURN))
+	bool start = false;
+	// パッドでスタート
+	for (int pad_no = 0; pad_no < NumPad(); pad_no++) {
+		if (IsButtonTriggered(pad_no, BUTTON_GAME_START))
+			start = true;
+	}
+	// キーボードでスタート
+	if (GetKeyboardTrigger(DIK_RETURN))
+		start = true;;
+
+	if (start)
 	{
-		if(g_nCountAppearStart == 0)
+		if (g_nCountAppearStart == 0)
 		{// タイトル登場スキップ
 			g_fAlphaLogo = 1.0f;
 			SetColorTitleLogo();
@@ -183,6 +195,7 @@ void UpdateTitle(void)
 		}
 		else
 		{// ゲームへ
+
 			SetFade(FADE_OUT);
 			PlaySound(SOUND_LABEL_GAMESTART);
 		}

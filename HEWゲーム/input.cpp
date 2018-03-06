@@ -672,3 +672,8 @@ BOOL IsKeyOrButtonReleased(int pad_no, InputCommand input_command) {
 	return false;
 
 }
+
+int NumPad(void)
+{
+	return padCount;
+}

@@ -101,9 +101,6 @@ void UninitGame(void)
 	// スコアの終了処理
 	UninitScore();
 
-	// BGM停止
-	PlaySound(SOUND_LABEL_BGM000);
-
 #ifdef _DEBUG
 	// バウンディングボックス描画用終了処理
 	UninitDebugBoundingBox();

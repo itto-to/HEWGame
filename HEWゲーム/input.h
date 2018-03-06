@@ -82,4 +82,6 @@ BOOL IsKeyOrButtonPressed(int pad_no, InputCommand input_command);
 BOOL IsKeyOrButtonTriggered(int pad_no, InputCommand input_command);
 BOOL IsKeyOrButtonReleased(int pad_no, InputCommand input_command);
 
+int NumPad(void);
+
 #endif // _INPUT_H_
