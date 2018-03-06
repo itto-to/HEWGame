@@ -55,13 +55,13 @@ LPDIRECT3DVERTEXBUFFER9 g_pD3DVtxBuffResultLogo = NULL;	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒ
 int						g_nCountAppearResult = 0;		// oŒ»‚Ü‚Å‚Ì‘Ò‚¿ŠÔ
 float					g_fAlphaResult = 0.0f;			// ƒŠƒUƒ‹ƒgƒƒS‚Ìƒ¿’l
 int						g_nCountWaitResult = 0;			// ‘Ò‚¿ŠÔ
-int						checkcount ;					// ¶‘¶ƒvƒŒƒCƒ„[”ƒJƒEƒ“ƒg
+int						checkcount;					// ¶‘¶ƒvƒŒƒCƒ„[”ƒJƒEƒ“ƒg
 RESULT resultWk[MAX_PLAYER];
 
 // ‚±‚±‚©‚çæ‚Í”š‚ğ•\¦‚·‚é‚½‚ß‚Ì‚à‚Ì
 RESULTNO resultno[4];
 
-char *resultno_FileName[]=
+char *resultno_FileName[] =
 {
 	RESULTNO_1,
 	RESULTNO_2,
@@ -69,15 +69,20 @@ char *resultno_FileName[]=
 	RESULTNO_4,
 };
 
-
+bool rank_ok[MAX_PLAYER];
 //*******************************************************
 // void InitCount(void)
 // ƒJƒEƒ“ƒg‰Šú‰»
 // result.cpp‚Ö‚ÌˆÚ“®‚É—˜—p‚·‚écheckcount‚Ì’l‚ğ‰Šú‰»
+// ƒtƒ‰ƒO‚à‚±‚±‚Å‰Šú‰»
 //*******************************************************
 void InitCount(void)
 {
 	checkcount = MAX_PLAYER;
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		rank_ok[i] = false;
+	}
 }
 //=============================================================================
 // ‰Šú‰»ˆ—
@@ -95,13 +100,13 @@ HRESULT InitResult(void)
 
 	// ƒeƒNƒXƒ`ƒƒ‚Ì“Ç‚İ‚İ
 	D3DXCreateTextureFromFile(pDevice,						// ƒfƒoƒCƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
-								TEXTURE_RESULT,				// ƒtƒ@ƒCƒ‹‚Ì–¼‘O
-								&g_pD3DTextureResult);		// “Ç‚İ‚Şƒƒ‚ƒŠ[
+		TEXTURE_RESULT,				// ƒtƒ@ƒCƒ‹‚Ì–¼‘O
+		&g_pD3DTextureResult);		// “Ç‚İ‚Şƒƒ‚ƒŠ[
 
-	// ƒeƒNƒXƒ`ƒƒ‚Ì“Ç‚İ‚İ
+									// ƒeƒNƒXƒ`ƒƒ‚Ì“Ç‚İ‚İ
 	D3DXCreateTextureFromFile(pDevice,						// ƒfƒoƒCƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
-								TEXTURE_RESULT_LOGO,		// ƒtƒ@ƒCƒ‹‚Ì–¼‘O
-								&g_pD3DTextureResultLogo);	// “Ç‚İ‚Şƒƒ‚ƒŠ[
+		TEXTURE_RESULT_LOGO,		// ƒtƒ@ƒCƒ‹‚Ì–¼‘O
+		&g_pD3DTextureResultLogo);	// “Ç‚İ‚Şƒƒ‚ƒŠ[
 
 	for(int i = 0; i < MAX_RANK; i++)
 	{
@@ -145,7 +150,7 @@ void UninitResult(void)
 		g_pD3DVtxBuffResultLogo = NULL;
 	}
 
-	for(int i = 0; i < MAX_RANK;i++)
+	for(int i = 0; i < MAX_RANK; i++)
 	{
 		if(resultno[i].texture != NULL)
 		{// ŠJ•ú
@@ -183,7 +188,7 @@ void UpdateResult(void)
 	/*g_nCountWaitResult++;
 	if(g_nCountWaitResult > LIMIT_COUNT_WAIT)
 	{
-		SetFade(FADE_OUT);
+	SetFade(FADE_OUT);
 	}*/
 }
 
@@ -230,7 +235,7 @@ void DrawResult(void)
 		{
 		case 1:
 			DrawMesh(resultno[0].buff, resultno[0].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
-				break;
+			break;
 		case 2:
 			DrawMesh(resultno[1].buff, resultno[1].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
 			break;
@@ -250,14 +255,14 @@ void DrawResult(void)
 HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 {
 	// ƒIƒuƒWƒFƒNƒg‚Ì’¸“_ƒoƒbƒtƒ@‚ğ¶¬
-    if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// ’¸“_ƒf[ƒ^—p‚ÉŠm•Û‚·‚éƒoƒbƒtƒ@ƒTƒCƒY(ƒoƒCƒg’PˆÊ)
-												D3DUSAGE_WRITEONLY,			// ’¸“_ƒoƒbƒtƒ@‚Ìg—p–@@
-												FVF_VERTEX_2D,				// g—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg
-												D3DPOOL_MANAGED,			// ƒŠƒ\[ƒX‚Ìƒoƒbƒtƒ@‚ğ•Û‚·‚éƒƒ‚ƒŠƒNƒ‰ƒX‚ğw’è
-												&g_pD3DVtxBuffResult,		// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒtƒF[ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
-												NULL)))						// NULL‚Éİ’è
+	if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// ’¸“_ƒf[ƒ^—p‚ÉŠm•Û‚·‚éƒoƒbƒtƒ@ƒTƒCƒY(ƒoƒCƒg’PˆÊ)
+		D3DUSAGE_WRITEONLY,			// ’¸“_ƒoƒbƒtƒ@‚Ìg—p–@@
+		FVF_VERTEX_2D,				// g—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg
+		D3DPOOL_MANAGED,			// ƒŠƒ\[ƒX‚Ìƒoƒbƒtƒ@‚ğ•Û‚·‚éƒƒ‚ƒŠƒNƒ‰ƒX‚ğw’è
+		&g_pD3DVtxBuffResult,		// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒtƒF[ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
+		NULL)))						// NULL‚Éİ’è
 	{
-        return E_FAIL;
+		return E_FAIL;
 	}
 
 	{//’¸“_ƒoƒbƒtƒ@‚Ì’†g‚ğ–„‚ß‚é
@@ -274,9 +279,9 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 
 		// ƒeƒNƒXƒ`ƒƒ‚Ìƒp[ƒXƒyƒNƒeƒBƒuƒRƒŒƒNƒg—p
 		pVtx[0].rhw =
-		pVtx[1].rhw =
-		pVtx[2].rhw =
-		pVtx[3].rhw = 1.0f;
+			pVtx[1].rhw =
+			pVtx[2].rhw =
+			pVtx[3].rhw = 1.0f;
 
 		// ”½ËŒõ‚Ìİ’è
 		pVtx[0].diffuse = D3DCOLOR_RGBA(255, 255, 255, 255);
@@ -295,14 +300,14 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 	}
 
 	// ƒIƒuƒWƒFƒNƒg‚Ì’¸“_ƒoƒbƒtƒ@‚ğ¶¬
-    if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// ’¸“_ƒf[ƒ^—p‚ÉŠm•Û‚·‚éƒoƒbƒtƒ@ƒTƒCƒY(ƒoƒCƒg’PˆÊ)
-												D3DUSAGE_WRITEONLY,			// ’¸“_ƒoƒbƒtƒ@‚Ìg—p–@@
-												FVF_VERTEX_2D,				// g—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg
-												D3DPOOL_MANAGED,			// ƒŠƒ\[ƒX‚Ìƒoƒbƒtƒ@‚ğ•Û‚·‚éƒƒ‚ƒŠƒNƒ‰ƒX‚ğw’è
-												&g_pD3DVtxBuffResultLogo,	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒtƒF[ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
-												NULL)))						// NULL‚Éİ’è
+	if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// ’¸“_ƒf[ƒ^—p‚ÉŠm•Û‚·‚éƒoƒbƒtƒ@ƒTƒCƒY(ƒoƒCƒg’PˆÊ)
+		D3DUSAGE_WRITEONLY,			// ’¸“_ƒoƒbƒtƒ@‚Ìg—p–@@
+		FVF_VERTEX_2D,				// g—p‚·‚é’¸“_ƒtƒH[ƒ}ƒbƒg
+		D3DPOOL_MANAGED,			// ƒŠƒ\[ƒX‚Ìƒoƒbƒtƒ@‚ğ•Û‚·‚éƒƒ‚ƒŠƒNƒ‰ƒX‚ğw’è
+		&g_pD3DVtxBuffResultLogo,	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒtƒF[ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^
+		NULL)))						// NULL‚Éİ’è
 	{
-        return E_FAIL;
+		return E_FAIL;
 	}
 
 	{//’¸“_ƒoƒbƒtƒ@‚Ì’†g‚ğ–„‚ß‚é
@@ -319,9 +324,9 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 
 		// ƒeƒNƒXƒ`ƒƒ‚Ìƒp[ƒXƒyƒNƒeƒBƒuƒRƒŒƒNƒg—p
 		pVtx[0].rhw =
-		pVtx[1].rhw =
-		pVtx[2].rhw =
-		pVtx[3].rhw = 1.0f;
+			pVtx[1].rhw =
+			pVtx[2].rhw =
+			pVtx[3].rhw = 1.0f;
 
 		// ”½ËŒõ‚Ìİ’è
 		pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
@@ -373,18 +378,23 @@ void SetColorResultLogo(void)
 // void RankCheck(void)
 // à–¾: ƒvƒŒƒCƒ„[‚Ìƒ‰ƒCƒt‚ªXV‚ÌŒ‹‰Ê0‚É‚È‚Á‚½ê‡Às‚³‚ê‚é
 //*********************************************************************
-void RankCheck(int no,int rank)
+void RankCheck(int no, int rank)
 {
 
-	// ƒLƒƒƒ‰ƒNƒ^[‚Ì¶‘¶”‚ğŒ¸‚ç‚·
-	checkcount--;
-	// ƒ‰ƒ“ƒN‚ğŒˆ’è
-	resultWk[no].rank = rank;
-	// ¶‚«‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚ª‹‚È‚¢ê‡ƒŠƒUƒ‹ƒg‰æ–Ê‚Ö
-	if(checkcount < 1)
+	// ó‚¯æ‚Á‚½no‚ÌƒvƒŒƒCƒ„[‚ªŠù‚É—£’E‚µ‚Ä‚¢‚È‚¯‚ê‚ÎÀs
+	if(rank_ok[no] == false)
 	{
-		SetFade(FADE_OUT);
-		//PlaySound(SOUND_LABEL_GAMESTART);
+		rank_ok[no] = true;
+		// ƒLƒƒƒ‰ƒNƒ^[‚Ì¶‘¶”‚ğŒ¸‚ç‚·
+		checkcount--;
+		// ƒ‰ƒ“ƒN‚ğŒˆ’è
+		resultWk[no].rank = rank;
+		// ¶‚«‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚ª‹‚È‚¢ê‡ƒŠƒUƒ‹ƒg‰æ–Ê‚Ö
+		if(checkcount <= 1)
+		{
+			SetFade(FADE_OUT);
+			//PlaySound(SOUND_LABEL_GAMESTART);
+		}
 	}
 }
 
