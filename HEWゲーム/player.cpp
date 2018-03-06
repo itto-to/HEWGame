@@ -505,3 +505,11 @@ bool IsGameSet(void)
 	}
 	return true;
 }
+
+bool IsPlayerAlive(int player_no)
+{
+	if (g_playerWk[player_no].state == PLAYER_DEAD)
+		return false;
+
+	return true;
+}

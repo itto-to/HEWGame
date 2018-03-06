@@ -9,8 +9,12 @@
 // インクルードファイル
 //***************************************************************
 #include "skill.h"
+
 #include <assert.h>
 #include <time.h>
+
+#include <vector>
+
 #include "stage.h"
 #include "skillact.h"
 #include "player.h"
@@ -24,6 +28,10 @@
 #define SKILL_WAKU		"data/TEXTURE/skill_frame.png"		// スキルゲージ
 #define SKILL_BAR		"data/TEXTURE/lifegreen.png"		// スキルゲージのバー
 //#define SKILL_BAR2
+#define TEXTURE_1P				"data/TEXTURE/1P.png"
+#define TEXTURE_2P				"data/TEXTURE/2P.png"
+#define TEXTURE_3P				"data/TEXTURE/3P.png"
+#define TEXTURE_4P				"data/TEXTURE/4P.png"
 
 
 // ゲージの枠部分
@@ -37,12 +45,19 @@
 
 // ゲージのバーの部分
 // 長さ
-#define SKILLBAR_WIDTH	(180.0f)
+#define SKILLBAR_WIDTH	(300.0f)
 #define SKILLBAR_HEIGHT	(20.0f)
 // 位置
-#define SKILLBAR_POS	(SKILLGAGE_POS + D3DXVECTOR3(10.0f, 0.0f, 0.0f))
+#define SKILLBAR_POS	(SKILLGAGE_POS + D3DXVECTOR3(100.0f, 20.0f, 0.0f))
 #define SKILLBAR_POS_X	(SKILLGAGE_POS_X + 10.0f)	// 良い感じに調整
 #define SKILLBAR_POS_Y	(SKILLGAGE_POS_Y + 0.0f )
+
+// 1P～4P表示
+// 長さ
+#define PLAYER_NO_WIDTH		(70.0f)
+#define PLAYER_NO_HEIGHT	(70.0f)
+// 位置
+#define PLAYER_NO_POS	(D3DXVECTOR3(SCREEN_LEFT + 130.0f, SCREEN_TOP - 60.0f, NearZ()))
 
 // その他ゲージ関連
 #define SKILL_LEVELUP	(5)			// レベルアップに必要な値
@@ -64,8 +79,8 @@
 //***************************************************************
 // プロトタイプ宣言
 //***************************************************************
-int skillsort_life(void);
-int skill_count_winner(void);
+std::vector<int> skillsort_life(std::vector<int> candidate_player);
+std::vector<int> skill_count_winner(std::vector<int> candidate_player);
 //***************************************************************
 // グローバル変数
 //***************************************************************
@@ -73,6 +88,8 @@ SKILL g_skillWk;							// スキル構造体
 SKILL_FLAG g_skill_flag[MAX_PLAYER];
 bool g_skillcheck_ok;						// スキル発動の権利を持っているプレイヤーが1人かどうか
 bool g_firstflag;							// 最初に権限を持ったプレイヤーが発生したかどうか
+LPDIRECT3DTEXTURE9 g_player_no_texture[MAX_PLAYER];	// 1P～4Pのテクスチャ
+LPDIRECT3DVERTEXBUFFER9 g_player_no_vtx;			// 1P～4Pの頂点
 
 //***************************************************************
 // 関数名:		HRESULT InitSkill(void)
@@ -85,9 +102,9 @@ HRESULT InitSkill(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	// 頂点情報の作成
-	//MakeVertexSkill(pDevice);
 	MakeVertex(pDevice, &g_skillWk.Buff_waku, &D3DXVECTOR3(SKILLGAGE_WIDTH / 2.0f, 0.0f, 0.0f), SKILLGAGE_WIDTH, SKILLGAGE_HEIGHT);
 	MakeVertex(pDevice, &g_skillWk.Buff_bar, &D3DXVECTOR3(SKILLBAR_WIDTH / 2.0f, 0.0f, 0.0f), SKILLBAR_WIDTH, SKILLBAR_HEIGHT);
+	MakeVertex(pDevice, &g_player_no_vtx, NULL, PLAYER_NO_WIDTH, PLAYER_NO_HEIGHT);
 
 	// ゲージ
 	D3DXCreateTextureFromFile(pDevice,
@@ -99,6 +116,20 @@ HRESULT InitSkill(void)
 		SKILL_WAKU,
 		&g_skillWk.Texture_waku);
 
+	// 1P～4Pテクスチャ読み込み
+	for (int i = 0; i < MAX_PLAYER; i++)
+	{
+		char filename[MAX_PATH] = "data/TEXTURE/";
+		char num[] = "1";
+		num[0] += i;
+		strcat(filename, num);
+		strcat(filename, "P.png");
+		if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &g_player_no_texture[i])))
+		{
+			return E_FAIL;
+		}
+	}
+
 	// フラグ初期化
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
@@ -109,7 +140,7 @@ HRESULT InitSkill(void)
 	}
 
 	// まだ権限は割り振られていない
-	g_skillWk.kengen = false;
+	g_skillWk.skill_player_id = -1;
 	g_firstflag = false;
 	// まだスキルは実行状態ではない
 	g_skillWk.moving = false;
@@ -152,7 +183,14 @@ void UninitSkill(void)
 	{
 		g_skillWk.Buff_waku->Release();
 		g_skillWk.Buff_waku = NULL;
+	}
 
+	// 1P～4P頂点開放
+	SAFE_RELEASE(g_player_no_vtx);
+
+	// 1P～4Pテクスチャ開放
+	for (int i = 0; i < MAX_PLAYER; i++) {
+		SAFE_RELEASE(g_player_no_texture[i]);
 	}
 }
 
@@ -194,54 +232,61 @@ void AddSkillGauge(float gauge_up)
 }
 
 
-void GiveSkillUseRight(void)
+// スキルを使えるプレイヤーを決める
+void GiveSkillUsingRight(void)
 {
-	// もし権限がまだ誰にも割り当てられていない場合
-	// 権限を決める
+	// もし権限がすでに割り当てられていたら終了
+	if (g_skillWk.skill_player_id != -1)
+		return;
 
-	if (g_skillWk.kengen == false)
+	// skillpointが5になっているプレイヤーの人数を確認
+	std::vector<int> candidate_player;	// 候補プレイヤーの番号リスト
+	for (int player_no = 0; player_no < NumPlayer(); player_no++)
 	{
-		int skillget_count = 0;
-		// skillpointが5になっているプレイヤーの人数を確認
-		for (int i = 0; i < MAX_PLAYER; i++)
+		PLAYER *player = GetPlayer(player_no);
+		if (player->skillpoint >= 5 && IsPlayerAlive(player_no))
 		{
-			if (player[i].skillpoint >= 5)
-			{
-				player[i].kengen = true;
-				skillget_count++;
-			}
-			else
-			{
-				player[i].kengen = false;
-			}
-		}
-
-		// 2人以上が権限を持っている場合、条件判定へ移動
-		if (skillget_count >= 2)
-		{
-			g_skillcheck_ok = false;			// 権利の所有者は1人だけではない
-			GetSkill();
+			candidate_player.push_back(player_no);
+			player->kengen = true;
+			
 		}
 		else
 		{
-			g_skillWk.kengen = true;
+			player->kengen = false;
 		}
 	}
 
-	// ダッシュゲージの量を測定
-	for (int i = 0; i < MAX_PLAYER; i++)
-	{	// 一度もスキルが割り振られていなければ実行
-		if (g_firstflag == false)
-		{
-			gage_max = IsDashGaugeFull(i);
-			if (gage_max == true)
-			{
-				player[i].kengen = true;
-				g_firstflag = true;
-			}
-		}
+	if (candidate_player.size() == 0) {
+		g_skillWk.skill_player_id = -1;
+		return;
+	}
+	if (candidate_player.size() == 1)
+	{
+		g_skillWk.skill_player_id = candidate_player[0];
+		return;
 	}
 
+	// 2人以上が候補の場合、条件判定へ移動
+
+	// ライフの少ない順
+	candidate_player = skillsort_life(candidate_player);
+	if (candidate_player.size() == 1)
+	{
+		g_skillWk.skill_player_id = candidate_player[0];
+		return;
+	}
+
+	// スキル発動回数が少ない順
+	candidate_player = skill_count_winner(candidate_player);
+	if (candidate_player.size() == 1)
+	{
+		g_skillWk.skill_player_id = candidate_player[0];
+		return;
+	}
+
+	// それでも複数いたらランダムで決定
+	int rand_idx = rand() % candidate_player.size();
+	g_skillWk.skill_player_id = candidate_player[rand_idx];
 }
 
 //****************************************************************
@@ -332,11 +377,14 @@ void DrawSkill(void)
 	//Draw_Skillbar = (skill_hiritsu * SKILLBAR_WIDTH);
 
 	// 枠を描画
-
 	DrawMesh(g_skillWk.Buff_waku, g_skillWk.Texture_waku, SKILLGAGE_POS, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
 	// バーを描画
 	DrawMesh(g_skillWk.Buff_bar, g_skillWk.Texture_bar, SKILLBAR_POS, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(skillbar_ratio, 1.0f, 1.0f));
-
+	// スキル発動権を持つプレイヤー表示
+	if (g_skillWk.skill_player_id != -1)
+	{
+		DrawMesh(g_player_no_vtx, g_player_no_texture[g_skillWk.skill_player_id], PLAYER_NO_POS, D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+	}
 
 	//// スキルバーのバッファ作成
 	//if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用、確保するバッファのサイズ
@@ -545,141 +593,175 @@ void SetColorSkill(void)
 // 説明:	updateskillで権限を持っているプレイヤーが2人以上の場合実行、1人のプレイヤーに権限を与える
 //			[Get関数ではないです！]
 //*****************************************************************************
-void GetSkill(void)
-{
-	PLAYER *player = GetPlayer(0);
-	int skill_life_lower;
-	int skill_count_lower;
-	int counts = 0;
-	srand((unsigned)time(NULL));
-	int unmakase = 0;						// 0で初期化
-
-	// 同時に2人以上が条件を満たしていたら下記の判定
-
-	// ライフが少ない人
-	skill_life_lower = skillsort_life();
-
-	// 上記判定後も権利所有者が2人以上いた場合の処理
-	if(g_skillcheck_ok == false)
-	{
-		// 権限を持った人が一番少ない順番
-		skill_count_lower = skill_count_winner();
-	}
-	else
-	{
-		g_skillWk.kengen = true;
-	}
-
-
-	// それでも駄目な場合の処理
-	if(g_skillcheck_ok == false)
-	{
-		while(0)
-		{
-			srand((unsigned)time(NULL));
-			unmakase = rand() % MAX_PLAYER;			// 適当なとこから開始
-			if(player[unmakase].kengen == true)
-			{
-				break;
-				g_skillcheck_ok = true;
-				g_skillWk.kengen = true;
-			}
-		}
-
-		// それ以外のプレイヤーは権限剥奪及びポイントリセット
-		for(int i = 0; i < MAX_PLAYER; i++)
-		{
-			if(player[i].kengen == true && i != unmakase)
-			{
-				player[i].kengen = false;
-				SkillReset(i);
-			}
-		}
-	}
-
-
-
-}
+//void GetSkill(void)
+//{
+//	PLAYER *player = GetPlayer(0);
+//	int skill_life_lower;
+//	int skill_count_lower;
+//	int counts = 0;
+//	srand((unsigned)time(NULL));
+//	int unmakase = 0;						// 0で初期化
+//
+//	// 同時に2人以上が条件を満たしていたら下記の判定
+//
+//	// ライフが少ない人
+//	skill_life_lower = skillsort_life();
+//
+//	// 上記判定後も権利所有者が2人以上いた場合の処理
+//	if(g_skillcheck_ok == false)
+//	{
+//		// 権限を持った人が一番少ない順番
+//		skill_count_lower = skill_count_winner();
+//	}
+//	else
+//	{
+//		g_skillWk.skill_player_id = true;
+//	}
+//
+//
+//	// それでも駄目な場合の処理
+//	if(g_skillcheck_ok == false)
+//	{
+//		while(0)
+//		{
+//			srand((unsigned)time(NULL));
+//			unmakase = rand() % MAX_PLAYER;			// 適当なとこから開始
+//			if(player[unmakase].kengen == true)
+//			{
+//				break;
+//				g_skillcheck_ok = true;
+//				g_skillWk.skill_player_id = true;
+//			}
+//		}
+//
+//		// それ以外のプレイヤーは権限剥奪及びポイントリセット
+//		for(int i = 0; i < MAX_PLAYER; i++)
+//		{
+//			if(player[i].kengen == true && i != unmakase)
+//			{
+//				player[i].kengen = false;
+//				SkillReset(i);
+//			}
+//		}
+//	}
+//
+//
+//
+//}
 
 
 //******************************************************************************
-// 関数名:	int skillsort_life(void)
+// 関数名:	std::vector<int> skillsort_life(std::vector<int> candidate_player)
 // 引数:	なし
 // 戻り値:	int winner
-// 説明:	プレイヤーの体力を比較して一番ライフが少ないプレイヤーの番号を返す
+// 説明:	プレイヤーの体力を比較して一番ライフが少ないプレイヤーの番号リストを返す
 //******************************************************************************
-int skillsort_life(void)
+std::vector<int> skillsort_life(std::vector<int> candidate_player)
 {
-	PLAYER *player = GetPlayer(0);
-	int winner = 0;					// 勝者の番号
-	bool sort_life = true;			// この方法でプレイヤーを一人に絞れたか　
-
-									// 今はライフが同じ場合、番号が若いプレイヤーが権利を得る
-
-	for(int no = 1; no < MAX_PLAYER; no++)
+	std::vector<int> result_candidate_player;	// 結果用
+	int min_life = INT_MAX;						// 最も少ない体力値
+	for (auto player_no : candidate_player)
 	{
-		// 御互いの体力が同じ場合
-		if(player[winner].life == player[no].life)
+		PLAYER *player = GetPlayer(player_no);
+		if (min_life > player->life)
 		{
-			sort_life = false;
+			result_candidate_player.clear();				// 今までの候補をクリアして
+			result_candidate_player.push_back(player_no);	// プレイヤー登録
+			min_life = player->life;	// 最小値更新
 		}
-
-		// 現在の勝者の体力より少ない人がでたら
-		if(player[winner].life > player[no].life)
+		else if (min_life == player->life)
 		{
-			player[winner].kengen = false;				// 権限を失い
-			SkillReset(winner);							// ポイントも失う
-			winner = no;								// その人をwinnerに
+			result_candidate_player.push_back(player_no);
 		}
-
-
-
-
 	}
 
-	return winner;
+	return result_candidate_player;
+	//PLAYER *player = GetPlayer(0);
+	//int winner = 0;					// 勝者の番号
+	//bool sort_life = true;			// この方法でプレイヤーを一人に絞れたか　
+
+	//								// 今はライフが同じ場合、番号が若いプレイヤーが権利を得る
+
+	//for(int no = 1; no < MAX_PLAYER; no++)
+	//{
+	//	// 御互いの体力が同じ場合
+	//	if(player[winner].life == player[no].life)
+	//	{
+	//		sort_life = false;
+	//	}
+
+	//	// 現在の勝者の体力より少ない人がでたら
+	//	if(player[winner].life > player[no].life)
+	//	{
+	//		player[winner].kengen = false;				// 権限を失い
+	//		SkillReset(winner);							// ポイントも失う
+	//		winner = no;								// その人をwinnerに
+	//	}
+
+
+
+
+	//}
 }
 
 //******************************************************************
-// 関数名:	int skill_count_winner(void)
+// 関数名:	std::vector<int> skill_count_winner(std::vector<int> candidate_player)
 // 引数:	なし
 // 戻り値:	count_winner
-// 説明:	スキルの発動回数が少ない人の番号を返す
+// 説明:	スキルの発動回数が少ない人の番号リストを返す
 //******************************************************************
-int skill_count_winner(void)
+std::vector<int> skill_count_winner(std::vector<int> candidate_player)
 {
-	PLAYER *player = GetPlayer(0);
-	int count_winner = 0;				// 0番目から比較開始
-	int shaka = 0;						// 権限持ちを探すときに使う関数
-	g_skillcheck_ok = true;				// 抜けられると仮定
-
-										// 若い順から見ていって権限を持っているプレイヤーを探す
-	while(shaka = 0)
+	std::vector<int> result_candidate_player;
+	int min_skill_count = INT_MAX;	// スキル使用回数の最小値
+	for (auto player_no : candidate_player)
 	{
-		if(player[count_winner].kengen == false)
+		if (min_skill_count > g_skill_flag[player_no].use_count)
 		{
-			count_winner++;
+			result_candidate_player.clear();				// 今までのプレイヤーを削除して
+			result_candidate_player.push_back(player_no);	// 新しく登録
+			min_skill_count = g_skill_flag[player_no].use_count;
 		}
-		else
+		else if (min_skill_count == g_skill_flag[player_no].use_count)
 		{
-			shaka++;
+			result_candidate_player.push_back(player_no);	// 追加登録
 		}
 	}
 
-	for(int i = 1; i < MAX_PLAYER; i++)	// 0番目と1番目から比較開始
-	{
-		if(g_skill_flag[count_winner].count == g_skill_flag[i].count)
-		{
-			g_skillcheck_ok = false;			// 2人以上いる！
-		}
-		else if(g_skill_flag[count_winner].count > g_skill_flag[i].count)
-		{// 自分よりも小さい値が見つかった
-			player[count_winner].kengen = false;		// 権限をはく奪して
-			SkillReset(count_winner);					// ポイントもリセット
-			count_winner = i;							// 勝者を残す
-		}
-	}
-	return count_winner;
+	return result_candidate_player;
+
+	//PLAYER *player = GetPlayer(0);
+	//int count_winner = 0;				// 0番目から比較開始
+	//int shaka = 0;						// 権限持ちを探すときに使う関数
+	//g_skillcheck_ok = true;				// 抜けられると仮定
+
+	//									// 若い順から見ていって権限を持っているプレイヤーを探す
+	//while(shaka = 0)
+	//{
+	//	if(player[count_winner].kengen == false)
+	//	{
+	//		count_winner++;
+	//	}
+	//	else
+	//	{
+	//		shaka++;
+	//	}
+	//}
+
+	//for(int i = 1; i < MAX_PLAYER; i++)	// 0番目と1番目から比較開始
+	//{
+	//	if(g_skill_flag[count_winner].count == g_skill_flag[i].count)
+	//	{
+	//		g_skillcheck_ok = false;			// 2人以上いる！
+	//	}
+	//	else if(g_skill_flag[count_winner].count > g_skill_flag[i].count)
+	//	{// 自分よりも小さい値が見つかった
+	//		player[count_winner].kengen = false;		// 権限をはく奪して
+	//		SkillReset(count_winner);					// ポイントもリセット
+	//		count_winner = i;							// 勝者を残す
+	//	}
+	//}
+	//return count_winner;
 }
 
 //******************************************************************************
@@ -713,7 +795,10 @@ void SkillAct(int player_no)
 	// スキル発動中の場合実行されない
 	if(g_skillWk.moving != true && g_skillWk.lv > 0)
 	{
+		// スキル発動回数増加
+		g_skill_flag[player_no].use_count++;
 		// 効果発動時に権限を失う
+		g_skillWk.skill_player_id = -1;
 		player[player_no].kengen = false;
 		SkillReset(player_no);
 		g_skillWk.moving = true;
@@ -775,6 +860,7 @@ void SkillAct(int player_no)
 			}
 		}
 
+		// スキルレベルをリセット
 		g_skillWk.lv = 0;
 	}
 
@@ -787,7 +873,7 @@ void SkillAct(int player_no)
 void skillwinner(int no)
 {
 	PLAYER *player = GetPlayer(0);
-
+	g_skillWk.skill_player_id = no;
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
 		if(i == no)

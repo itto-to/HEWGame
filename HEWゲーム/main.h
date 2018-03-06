@@ -44,6 +44,10 @@
 #define SCREEN_PIXEL_HEIGHT	(768)
 #define SCREEN_CENTER_X	(SCREEN_WIDTH / 2)	// ウインドウの中心Ｘ座標
 #define SCREEN_CENTER_Y	(SCREEN_HEIGHT / 2)	// ウインドウの中心Ｙ座標
+#define SCREEN_LEFT			(-SCREEN_WIDTH / 2.0f)
+#define SCREEN_RIGHT		( SCREEN_WIDTH / 2.0f)
+#define SCREEN_TOP			( SCREEN_HEIGHT / 2.0f)
+#define SCREEN_BOTTOM		(-SCREEN_HEIGHT / 2.0f)
 
 #define	NUM_VERTEX		(4)		// 頂点数
 #define	NUM_POLYGON		(2)		// ポリゴン数

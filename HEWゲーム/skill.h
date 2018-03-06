@@ -26,10 +26,10 @@ typedef struct
 	LPDIRECT3DTEXTURE9			Texture_waku;
 	LPDIRECT3DVERTEXBUFFER9		Buff_bar;
 	LPDIRECT3DVERTEXBUFFER9		Buff_waku;
-	float						gage;								// 今のゲージの値
+	float						gauge;								// 今のゲージの値
 	float						gage_lvup;							// レベルアップに必要な値
 	int							lv;									// スキルのレベル
-	bool						kengen;								// 権限は既に割りふてられている？
+	int							skill_player_id;					// スキル発動権を持つプレイヤー番号（-1のときは誰も持っていない）
 	bool						moving;								// スキルは今実行されている？
 
 }SKILL;
@@ -57,10 +57,11 @@ typedef enum
 //**************************************************************
 HRESULT InitSkill(void);
 void UninitSkill(void);
-void UpdateSkill(float gageup);
+void AddSkillGauge(float gageup);
 void DrawSkill(void);
 HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice);
 void SetColorSkill(void);
+void GiveSkillUsingRight(void);
 void GetSkill(void);
 void SkillReset(int no);
 SKILL *GetSkillWk(int no);

@@ -26,22 +26,21 @@
 //*****************************************************************************
 #define STAGE_FILE		"data/stage.csv"
 
+// 障害物
 #define TEXTURE_PLAIN_JUMP      "data/TEXTURE/スライム_平原_小ジャンプ.png"
 #define TEXTURE_PLAIN_LARGEJUMP "data/TEXTURE/木_平原_大ジャンプ.png"
 #define TEXTURE_PLAIN_SLIDING   "data/TEXTURE/ワシ_平原_スライディング.png"
-
 #define TEXTURE_DESERT_JUMP      "data/TEXTURE/サソリ_砂漠_小ジャンプ.png"
 #define TEXTURE_DESERT_LARGEJUMP "data/TEXTURE/サボテン_砂漠_大ジャンプ.png"
 #define TEXTURE_DESERT_SLIDING   "data/TEXTURE/プテラノドン_砂漠_スライディング.png"
-
 #define TEXTURE_VOLCANO_JUMP      "data/TEXTURE/コモドドラゴン_火山_小ジャンプ.png"
 #define TEXTURE_VOLCANO_LARGEJUMP "data/TEXTURE/火山_岩_大ジャンプ.png"
 #define TEXTURE_VOLCANO_SLIDING   "data/TEXTURE/こうもり_火山_スライディング.png"
-
 #define TEXTURE_SNOW_JUMP      "data/TEXTURE/雪うさぎ_雪_小ジャンプ.png"
 #define TEXTURE_SNOW_LARGEJUMP "data/TEXTURE/スノーマン_雪_大ジャンプ.png"
 #define TEXTURE_SNOW_SLIDING   "data/TEXTURE/雪玉_雪_スライディング.png"
 
+// レーン
 #define TEXTURE_LANE			"data/TEXTURE/stage_lane.png"
 #define LANE_WIDTH				(120.0f)
 #define LANE_HEIGHT				(10.f)
@@ -94,8 +93,8 @@ int g_stage_count;					// 現在のステージのカウント
 LANE g_lane[MAX_PLAYER];
 LPDIRECT3DVERTEXBUFFER9 g_lane_vtx;	// レーンの頂点
 LPDIRECT3DTEXTURE9 g_lane_tex;		// レーンのテクスチャ
-LPDIRECT3DVERTEXBUFFER9 g_count_vtx;	// レーンの頂点
-LPDIRECT3DTEXTURE9 g_count_tex[MAX_COUNTDOWN];		// レーンのテクスチャ
+LPDIRECT3DVERTEXBUFFER9 g_count_vtx;	// カウントダウンの頂点
+LPDIRECT3DTEXTURE9 g_count_tex[MAX_COUNTDOWN];		// カウントダウンのテクスチャ
 OBSTACLE g_obstacle[MAX_PLAYER][MAX_NUM_OBSTACLE];	// 障害物配列
 STAGE_DATA g_stage_data[STAGE_MAX];
 LPDIRECT3DTEXTURE9 g_bg_texture[STAGE_MAX][OBSTACLE_MAX];
@@ -115,7 +114,7 @@ HRESULT InitStage(void)
 	// ファイルからステージ情報読込
 	ReadStageData();
 
-	// テクスチャの読み込み
+	// 障害物テクスチャの読み込み
 	for (int stage_no = 0; stage_no < STAGE_MAX; stage_no++)
 	{
 		for (int obstacle_no = 0; obstacle_no < OBSTACLE_MAX; obstacle_no++)
@@ -157,6 +156,7 @@ HRESULT InitStage(void)
 		}
 	}
 
+	// レーンテクスチャ読み込み
 	if (FAILED(D3DXCreateTextureFromFile(pDevice, TEXTURE_LANE, &g_lane_tex)))
 	{
 		return E_FAIL;
@@ -199,16 +199,16 @@ HRESULT InitStage(void)
 //****************************************************************************
 void UninitStage(void)
 {
-	for (int player_no = 0; player_no < NumPlayer(); player_no++) {
-		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++) {
-			SAFE_RELEASE(g_obstacle[player_no][obstacle_no].vtx);
-			SAFE_RELEASE(g_obstacle[player_no][obstacle_no].texture);
+	// 障害物テクスチャ
+	for (int stage_no = 0; stage_no < STAGE_MAX; stage_no++) {
+		for (int obstacle_no = 0; obstacle_no < OBSTACLE_MAX; obstacle_no++) {
+			SAFE_RELEASE(g_obstacle[stage_no][obstacle_no].texture);
 		}
 	}
 
-	SAFE_RELEASE(g_obstacle_vtx);
-	SAFE_RELEASE(g_lane_vtx);
-	SAFE_RELEASE(g_lane_tex);
+	SAFE_RELEASE(g_obstacle_vtx);	// 障害物頂点
+	SAFE_RELEASE(g_lane_vtx);		// レーン頂点
+	SAFE_RELEASE(g_lane_tex);		// レーンテクスチャ
 }
 
 // ステージ更新処理
@@ -431,7 +431,7 @@ void DrawObstacle(OBSTACLE *obstacle)
 	D3DXMATRIX mtxScl, mtxRot, mtxTranslate, mtxWorld;
 
 	// 頂点バッファをデバイスのデータストリームにバインド
-	pDevice->SetStreamSource(0, obstacle->vtx, 0, sizeof(VERTEX_3D));
+	pDevice->SetStreamSource(0, g_obstacle_vtx, 0, sizeof(VERTEX_3D));
 
 	// 頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_3D);
@@ -575,7 +575,6 @@ void SetStageObstacle(STAGE_TYPE stage)
 			obstacle.stage = stage;
 			obstacle.screen_box = OBSTACLE_SCREEN_BOX;
 			obstacle.hit_box = OBSTACLE_JUMP_HIT_BOX;
-			obstacle.vtx = g_obstacle_vtx;
 
 			switch(tile) {
 			case CHAR_JUMP:

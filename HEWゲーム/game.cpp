@@ -121,7 +121,7 @@ void UpdateGame(void)
 	CheckHitPlayerObstacle();
 
 	// スキルの更新処理
-	UpdateSkill(0);
+	GiveSkillUsingRight();
 	UpdateSkillAct();
 
 	// ライフ処理の更新
@@ -179,6 +179,10 @@ void CheckHitPlayerObstacle(void)
 					// 無敵状態に
 					player->is_invincible = true;
 					player->invincible_counter = 0;
+					// スキル発動権はく奪
+					player->skillpoint = 0;
+					if (player->lane_no == GetSkillWk(0)->skill_player_id)
+						GetSkillWk(0)->skill_player_id = -1;
 				}
 
 				// ぶつかった障害物はスキルポイントを与えない
