@@ -447,7 +447,7 @@ void RankCheck(int no, int rank)
 
 		resultWk[no].rank = rank-1;			// rankの値より1少ない番号が順位
 		// 生きているキャラクターが居ない場合リザルト画面へ
-		if(checkcount < 1)
+		if(checkcount == 1)
 		{
 			SetFade(FADE_OUT);
 			// BGM停止
