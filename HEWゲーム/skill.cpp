@@ -47,8 +47,11 @@
 #define LANESPEED_UP	(0.05f)
 #define LANESPEED_DOWN	(0.1f)
 
-
-#define SPEED_LIFE
+// それぞれの場所
+#define UPDOWNPOS_X			(10.0f)
+#define UPDOWNPOS_Y			(10.0f)
+#define OJYAMA_POS_X		(300.0f)
+#define THANDER_POS_Y		(15.0f)
 
 //***************************************************************
 // プロトタイプ宣言
@@ -721,7 +724,8 @@ void SkillAct(int player_no)
 
 						// 加速
 						lane[i].speed_factor += LANESPEED_UP;
-						SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+						SetSkillAct(D3DXVECTOR3(player[i].pos.x- UPDOWNPOS_X, player[i].pos.y+UPDOWNPOS_Y, player[i].pos.z),
+							EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 						// 音鳴らす
 						PlaySound(SOUND_LABEL_SKILL_SPEEDUP);
 						// 時間設定
@@ -730,7 +734,8 @@ void SkillAct(int player_no)
 					case 1:
 						// 減速
 						lane[i].speed_factor -= LANESPEED_DOWN;
-						SetSkillAct(player[i].pos, EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+						SetSkillAct(D3DXVECTOR3(player[i].pos.x-UPDOWNPOS_X, player[i].pos.y, player[i].pos.z),
+							EFFECT_UP, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 						// 音鳴らす
 						PlaySound(SOUND_LABEL_SKILL_SPEEDDOWN);
 						break;
@@ -742,14 +747,16 @@ void SkillAct(int player_no)
 					// ブロックの表示のみ
 					// 音鳴らす
 					PlaySound(SOUND_LABEL_SKILL_OJYAMA);
-					SetSkillAct(player[i].pos, EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+					SetSkillAct(D3DXVECTOR3(player[i].pos.x, player[i].pos.y, player[i].pos.z),
+						EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
 				case KAMINARI:
 					// 動作
 					// 音鳴らす
 					PlaySound(SOUND_LABEL_SKILL_THANDER);
 					// ライフ減少は雷とプレイヤーがぶつかったときに
-					SetSkillAct(player[i].pos, EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+					SetSkillAct(D3DXVECTOR3(player[i].pos.x, player[i].pos.y, player[i].pos.z),
+						EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
 				}
 			}
