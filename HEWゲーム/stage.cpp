@@ -254,7 +254,8 @@ void UpdateStageCountDown(void)
 		// カウントを進める
 		g_stage_count++;
 		// カウントダウン音再生
-		PlaySound(SOUND_LABEL_COUNT);
+		if (!IsPlaying(SOUND_LABEL_COUNT))
+			PlaySound(SOUND_LABEL_COUNT);
 	}
 
 	if (g_stage_count >= COUNTDOWN_INTERVAL * 2)
@@ -388,7 +389,7 @@ void DrawStage(void)
 		}
 	}
 
-	// カウント描画
+	// カウントダウン描画
 	//DrawCountDown();
 }
 

@@ -10,6 +10,7 @@
 #include "player.h"
 #include "mesh.h"
 #include "game.h"
+#include "sound.h"
 
 //*****************************************************************************
 // É}ÉNÉçíËã`
@@ -393,6 +394,8 @@ void RankCheck(int no, int rank)
 		if(checkcount <= 1)
 		{
 			SetFade(FADE_OUT);
+			// BGMí‚é~
+			StopSound(SOUND_LABEL_BGM000);
 			//PlaySound(SOUND_LABEL_GAMESTART);
 		}
 	}

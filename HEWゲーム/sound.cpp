@@ -180,6 +180,8 @@ HRESULT InitSound(HWND hWnd)
 
 		// オーディオバッファの登録
 		g_apSourceVoice[nCntSound]->SubmitSourceBuffer(&buffer);
+
+		StopSound((SoundLabel)nCntSound);
 	}
 
 	return S_OK;
@@ -251,6 +253,25 @@ HRESULT PlaySound(SoundLabel label)
 	g_apSourceVoice[label]->Start(0);
 
 	return S_OK;
+}
+
+bool IsPlaying(SoundLabel label)
+{
+	XAUDIO2_VOICE_STATE xa2state;
+	XAUDIO2_BUFFER buffer;
+
+	memset(&buffer, 0, sizeof(XAUDIO2_BUFFER));
+	buffer.AudioBytes = g_aSizeAudio[label];
+	buffer.pAudioData = g_apDataAudio[label];
+	buffer.Flags = XAUDIO2_END_OF_STREAM;
+	buffer.LoopCount = 0;
+
+	// 状態取得
+	g_apSourceVoice[label]->GetState(&xa2state);
+	if (xa2state.BuffersQueued != 0) {// 再生中
+		return true;
+	}
+	return false;
 }
 
 //=============================================================================

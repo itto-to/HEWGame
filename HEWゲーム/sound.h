@@ -55,6 +55,7 @@ typedef enum
 HRESULT InitSound(HWND hWnd);
 void UninitSound(void);
 HRESULT PlaySound(SoundLabel label);
+bool IsPlaying(SoundLabel label);
 void StopSound(SoundLabel label);
 void StopSound(void);
 
