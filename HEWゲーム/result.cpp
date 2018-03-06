@@ -25,6 +25,10 @@
 #define	COUNT_APPERA_RESULT	(60)		// リザルトロゴ出現までの待ち時間	
 #define	LIMIT_COUNT_WAIT	(60 * 5)	// 待ち時間
 
+
+// ナンバー
+#define RESULTNO_HEIGHT	(70)
+#define RESULTNO_WIDTH	(70)
 #define RESULTNO_1	("data/TEXTURE/result_1st.png")
 #define RESULTNO_2	("data/TEXTURE/result_2nd.png")
 #define RESULTNO_3	("data/TEXTURE/result_3rd.png")
@@ -322,56 +326,10 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 		g_pD3DVtxBuffResultLogo->Unlock();
 	}
 
-
-	// キャラクターの頂点バッファ生成
-	for(int i = 0; i < MAX_PLAYER; i++)
+	for(int i = 0; i < MAX_RANK; i++)
 	{
-		if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用に確保するバッファサイズ(バイト単位)
-			D3DUSAGE_WRITEONLY,			// 頂点バッファの使用法　
-			FVF_VERTEX_2D,				// 使用する頂点フォーマット
-			D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラスを指定
-			&resultWk[i].resultrank_buff,	// 頂点バッファインターフェースへのポインタ
-			NULL)))						// NULLに設定
-		{
-			return E_FAIL;
-		}
-
-		{//頂点バッファの中身を埋める
-			VERTEX_2D *pVtx;
-
-			// 頂点データの範囲をロックし、頂点バッファへのポインタを取得
-			g_pD3DVtxBuffResultLogo->Lock(0, 0, (void**)&pVtx, 0);
-
-			// 頂点座標の設定
-			pVtx[0].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y, 0.0f);
-			pVtx[1].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y, 0.0f);
-			pVtx[2].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
-			pVtx[3].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
-
-			// テクスチャのパースペクティブコレクト用
-			pVtx[0].rhw =
-				pVtx[1].rhw =
-				pVtx[2].rhw =
-				pVtx[3].rhw = 1.0f;
-
-			// 反射光の設定
-			pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-			pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-			pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-			pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaResult);
-
-			// テクスチャ座標の設定
-			pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-			pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-			pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-			pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
-
-			// 頂点データをアンロックする
-			g_pD3DVtxBuffResultLogo->Unlock();
-		}
+		MakeVertex(pDevice, &resultno[i].buff, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), RESULTNO_WIDTH, RESULTNO_HEIGHT);
 	}
-
-	MakeVertex
 	return S_OK;
 }
 
