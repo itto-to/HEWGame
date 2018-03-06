@@ -19,6 +19,7 @@
 #include "score.h"
 #include "sound.h"
 #include "skill.h"
+#include "result.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -73,6 +74,8 @@ char *player_textureFileName[MAX_PLAYER] =
 	TEXTURE_PLAYER_WIZARD,
 };
 
+int rank;									// 脱落したプレイヤーの順位
+int oldrank;
 //=============================================================================
 // 初期化処理
 //=============================================================================
@@ -80,6 +83,8 @@ HRESULT InitPlayer(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+	// 脱落したプレイヤーの順位初期化
+	rank = MAX_PLAYER;
 	// プレイ人数設定
 	g_num_player = MAX_PLAYER;
 
@@ -131,6 +136,9 @@ HRESULT InitPlayer(void)
 		TEXTURE_DASH_GAUGE,			// ファイルの名前
 		&g_texture_dash_gauge);		// 読み込むメモリー
 
+	// カウントの初期化
+	InitCount();
+
 	return S_OK;
 }
 
@@ -158,6 +166,11 @@ void UninitPlayer(void)
 void UpdatePlayer(void)
 {
 	SKILL *skillWk = GetSkillWk(0);
+	RESULT *result = GetResult(0);
+	bool dead = false;						// 今のフレームで脱落者が出たら
+
+	// 現在のランクを保存
+	oldrank = rank;
 
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
@@ -232,6 +245,16 @@ void UpdatePlayer(void)
 		// 死亡判定
 		if (g_playerWk[no].life <= 0)
 		{
+			// 同じタイミングで複数脱落者が出たかどうか
+			if(dead == true)
+			{
+				RankCheck(no,oldrank);
+			}
+			else
+			{
+				dead = true;				// 脱落者が出た
+				RankCheck(no,rank);
+			}
 			g_playerWk[no].next_state = PLAYER_DEAD;
 		}
 
@@ -248,6 +271,12 @@ void UpdatePlayer(void)
 
 		// ステート変更
 		ChangePlayerState(&g_playerWk[no]);
+	}
+
+	// 脱落者が出た場合、次のプレイヤーの順位を上げる
+	if(dead == true)
+	{
+		rank--;
 	}
 }
 

@@ -55,6 +55,7 @@ LPDIRECT3DVERTEXBUFFER9 g_pD3DVtxBuffResultLogo = NULL;	// ’¸“_ƒoƒbƒtƒ@ƒCƒ“ƒ^[ƒ
 int						g_nCountAppearResult = 0;		// oŒ»‚Ü‚Å‚Ì‘Ò‚¿ŠÔ
 float					g_fAlphaResult = 0.0f;			// ƒŠƒUƒ‹ƒgƒƒS‚Ìƒ¿’l
 int						g_nCountWaitResult = 0;			// ‘Ò‚¿ŠÔ
+int						checkcount ;					// ¶‘¶ƒvƒŒƒCƒ„[”ƒJƒEƒ“ƒg
 RESULT resultWk[MAX_PLAYER];
 
 // ‚±‚±‚©‚çæ‚Í”š‚ğ•\¦‚·‚é‚½‚ß‚Ì‚à‚Ì
@@ -68,6 +69,16 @@ char *resultno_FileName[]=
 	RESULTNO_4,
 };
 
+
+//*******************************************************
+// void InitCount(void)
+// ƒJƒEƒ“ƒg‰Šú‰»
+// result.cpp‚Ö‚ÌˆÚ“®‚É—˜—p‚·‚écheckcount‚Ì’l‚ğ‰Šú‰»
+//*******************************************************
+void InitCount(void)
+{
+	checkcount = MAX_PLAYER;
+}
 //=============================================================================
 // ‰Šú‰»ˆ—
 //=============================================================================
@@ -99,6 +110,8 @@ HRESULT InitResult(void)
 			resultno_FileName[i],
 			&resultno[i].texture);
 	}
+
+	checkcount = MAX_PLAYER;
 
 	return S_OK;
 }
@@ -167,11 +180,11 @@ void UpdateResult(void)
 		SetFade(FADE_OUT);
 	}
 
-	g_nCountWaitResult++;
+	/*g_nCountWaitResult++;
 	if(g_nCountWaitResult > LIMIT_COUNT_WAIT)
 	{
 		SetFade(FADE_OUT);
-	}
+	}*/
 }
 
 //=============================================================================
@@ -355,6 +368,25 @@ void SetColorResultLogo(void)
 	}
 }
 
+
+//*********************************************************************
+// void RankCheck(void)
+// à–¾: ƒvƒŒƒCƒ„[‚Ìƒ‰ƒCƒt‚ªXV‚ÌŒ‹‰Ê0‚É‚È‚Á‚½ê‡Às‚³‚ê‚é
+//*********************************************************************
+void RankCheck(int no,int rank)
+{
+
+	// ƒLƒƒƒ‰ƒNƒ^[‚Ì¶‘¶”‚ğŒ¸‚ç‚·
+	checkcount--;
+	// ƒ‰ƒ“ƒN‚ğŒˆ’è
+	resultWk[no].rank = rank;
+	// ¶‚«‚Ä‚¢‚éƒLƒƒƒ‰ƒNƒ^[‚ª‹‚È‚¢ê‡ƒŠƒUƒ‹ƒg‰æ–Ê‚Ö
+	if(checkcount < 1)
+	{
+		SetFade(FADE_OUT);
+		//PlaySound(SOUND_LABEL_GAMESTART);
+	}
+}
 
 //*********************************************************************
 // RESULT GetResult(int no)

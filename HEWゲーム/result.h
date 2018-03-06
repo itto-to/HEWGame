@@ -31,6 +31,7 @@ typedef struct
 
 
 
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -39,5 +40,7 @@ void UninitResult(void);
 void UpdateResult(void);
 void DrawResult(void);
 RESULT *GetResult(int no);
+void RankCheck(int no, int rank);
+void InitCount(void);
 
 #endif
