@@ -44,8 +44,6 @@ void CheckHitPlayerObstacle(void);
 //=============================================================================
 HRESULT InitGame(void)
 {
-	// ライトの初期化
-	InitLight();
 
 	// 影の初期化
 	//InitShadow();
@@ -79,8 +77,6 @@ HRESULT InitGame(void)
 //=============================================================================
 void UninitGame(void)
 {
-	// ライトの終了処理
-	UninitLight();
 
 	// プレイヤーの終了処理
 	UninitPlayer();
@@ -138,7 +134,7 @@ void UpdateGame(void)
 void DrawGame(void)
 {
 	// カメラの設定
-	SetCamera();
+	//SetCamera();
 
 	// 背景の描画
 	DrawBackground();

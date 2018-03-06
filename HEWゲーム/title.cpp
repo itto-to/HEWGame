@@ -6,7 +6,9 @@
 //=============================================================================
 #include "title.h"
 
+#include "camera.h"
 #include "main.h"
+#include "mesh.h"
 #include "debugproc.h"
 #include "fade.h"
 #include "input.h"
@@ -26,10 +28,10 @@
 #define	TITLE_LOGO_WIDTH		(353.0f)		// タイトルロゴの幅
 #define	TITLE_LOGO_HEIGHT		(172.0f)		// タイトルロゴの高さ
 
-#define	START_POS_X				(SCREEN_CENTER_X)		// スタートボタンの位置(X座標)
-#define	START_POS_Y				(SCREEN_CENTER_Y)		// スタートボタンの位置(Y座標)
-#define	START_WIDTH				(353.0f)		// スタートボタンの幅
-#define	START_HEIGHT			(172.0f)		// スタートボタンの高さ
+#define	START_POS_X				(SCREEN_CENTER_X - 300)		// スタートボタンの位置(X座標)
+#define	START_POS_Y				(SCREEN_CENTER_Y + 200)		// スタートボタンの位置(Y座標)
+#define	START_WIDTH				(353.0f * 2)		// スタートボタンの幅
+#define	START_HEIGHT			(172.0f * 2)		// スタートボタンの高さ
 
 #define	COUNT_APPERA_START		(60)		// スタートボタン出現までの時間
 #define	INTERVAL_DISP_START		(60)		// スタートボタン点滅の時間
@@ -39,7 +41,6 @@
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-HRESULT MakeVertexTitle(LPDIRECT3DDEVICE9 pDevice);
 void SetColorTitleLogo(void);
 
 //*****************************************************************************
@@ -71,22 +72,22 @@ HRESULT InitTitle(void)
 	g_nConutDemo = 0;
 
 	// 頂点情報の作成
-	MakeVertexTitle(pDevice);
-
+	MakeVertex(pDevice, &g_pD3DVtxBuffTitle, NULL, SCREEN_WIDTH, SCREEN_HEIGHT);
+	MakeVertex(pDevice, &g_pD3DVtxBuffStart, NULL, START_WIDTH, START_HEIGHT);	// "PRESS START"
+	
 	// テクスチャの読み込み
-	D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
-								TEXTURE_TITLE,				// ファイルの名前
-								&g_pD3DTextureTitle);		// 読み込むメモリー
-
-	D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
-								TEXTURE_TITLE_LOGO,			// ファイルの名前
-								&g_pD3DTextureTitleLogo);	// 読み込むメモリー
-
-
-	D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
-								TEXTURE_LOGO_START,			// ファイルの名前
-								&g_pD3DTextureStart);		// 読み込むメモリー
-
+	if (FAILED(D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
+		TEXTURE_TITLE,				// ファイルの名前
+		&g_pD3DTextureTitle)))		// 読み込むメモリー
+	{
+		return E_FAIL;
+	}
+	if (FAILED(D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
+		TEXTURE_LOGO_START,			// ファイルの名前
+		&g_pD3DTextureStart)))		// 読み込むメモリー
+	{
+		return E_FAIL;
+	}
 	return S_OK;
 }
 
@@ -105,18 +106,6 @@ void UninitTitle(void)
 	{// 頂点バッファの開放
 		g_pD3DVtxBuffTitle->Release();
 		g_pD3DVtxBuffTitle = NULL;
-	}
-
-	if(g_pD3DTextureTitleLogo != NULL)
-	{// テクスチャの開放
-		g_pD3DTextureTitleLogo->Release();
-		g_pD3DTextureTitleLogo = NULL;
-	}
-
-	if(g_pD3DVtxBuffTitleLogo != NULL)
-	{// 頂点バッファの開放
-		g_pD3DVtxBuffTitleLogo->Release();
-		g_pD3DVtxBuffTitleLogo = NULL;
 	}
 
 	if(g_pD3DTextureStart != NULL)
@@ -209,30 +198,24 @@ void DrawTitle(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
-	// 頂点バッファをデバイスのデータストリームにバインド
-    pDevice->SetStreamSource(0, g_pD3DVtxBuffTitle, 0, sizeof(VERTEX_2D));
+	// タイトル描画
+	DrawMesh(g_pD3DVtxBuffTitle, g_pD3DTextureTitle, D3DXVECTOR3(0.0f, 0.0f, NearZ()), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
 
-	// 頂点フォーマットの設定
-	pDevice->SetFVF(FVF_VERTEX_2D);
+	// "PRESS START"描画
+	DrawMesh(g_pD3DVtxBuffStart, g_pD3DTextureStart, D3DXVECTOR3(0.0f, -300.0f, NearZ()), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
 
-	// テクスチャの設定
-	pDevice->SetTexture(0, g_pD3DTextureTitle);
+	//// 頂点バッファをデバイスのデータストリームにバインド
+ //   pDevice->SetStreamSource(0, g_pD3DVtxBuffTitle, 0, sizeof(VERTEX_2D));
 
-	// ポリゴンの描画
-	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+	//// 頂点フォーマットの設定
+	//pDevice->SetFVF(FVF_VERTEX_2D);
 
+	//// テクスチャの設定
+	//pDevice->SetTexture(0, g_pD3DTextureTitle);
 
-	// 頂点バッファをデバイスのデータストリームにバインド
-    pDevice->SetStreamSource(0, g_pD3DVtxBuffTitleLogo, 0, sizeof(VERTEX_2D));
+	//// ポリゴンの描画
+	//pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
-	// 頂点フォーマットの設定
-	pDevice->SetFVF(FVF_VERTEX_2D);
-
-	// テクスチャの設定
-	pDevice->SetTexture(0, g_pD3DTextureTitleLogo);
-
-	// ポリゴンの描画
-	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
 	if(g_bDispStart == true)
 	{
@@ -253,158 +236,14 @@ void DrawTitle(void)
 //=============================================================================
 // 頂点の作成
 //=============================================================================
-HRESULT MakeVertexTitle(LPDIRECT3DDEVICE9 pDevice)
+void SetColorTitleLogo(void)
 {
-	// オブジェクトの頂点バッファを生成
-    if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用に確保するバッファサイズ(バイト単位)
-												D3DUSAGE_WRITEONLY,			// 頂点バッファの使用法　
-												FVF_VERTEX_2D,				// 使用する頂点フォーマット
-												D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラスを指定
-												&g_pD3DVtxBuffTitle,		// 頂点バッファインターフェースへのポインタ
-												NULL)))						// NULLに設定
-	{
-        return E_FAIL;
-	}
-
 	{//頂点バッファの中身を埋める
-		VERTEX_2D *pVtx;
-
-		// 頂点データの範囲をロックし、頂点バッファへのポインタを取得
-		g_pD3DVtxBuffTitle->Lock(0, 0, (void**)&pVtx, 0);
-
-		// 頂点座標の設定
-		pVtx[0].vtx = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		pVtx[1].vtx = D3DXVECTOR3(SCREEN_WIDTH, 0.0f, 0.0f);
-		pVtx[2].vtx = D3DXVECTOR3(0.0f, SCREEN_HEIGHT, 0.0f);
-		pVtx[3].vtx = D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f);
-
-		// テクスチャのパースペクティブコレクト用
-		pVtx[0].rhw =
-		pVtx[1].rhw =
-		pVtx[2].rhw =
-		pVtx[3].rhw = 1.0f;
-
-		// 反射光の設定
-		pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-		pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-		pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-		pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-
-		// テクスチャ座標の設定
-		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-		pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
-
-		// 頂点データをアンロックする
-		g_pD3DVtxBuffTitle->Unlock();
-	}
-
-	// オブジェクトの頂点バッファを生成
-    if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用に確保するバッファサイズ(バイト単位)
-												D3DUSAGE_WRITEONLY,			// 頂点バッファの使用法　
-												FVF_VERTEX_2D,				// 使用する頂点フォーマット
-												D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラスを指定
-												&g_pD3DVtxBuffTitleLogo,	// 頂点バッファインターフェースへのポインタ
-												NULL)))						// NULLに設定
-	{
-        return E_FAIL;
-	}
-
-	{//頂点バッファの中身を埋める
-		VERTEX_2D *pVtx;
-
-		// 頂点データの範囲をロックし、頂点バッファへのポインタを取得
-		g_pD3DVtxBuffTitleLogo->Lock(0, 0, (void**)&pVtx, 0);
-
-		// 頂点座標の設定
-		pVtx[0].vtx = D3DXVECTOR3(TITLE_LOGO_POS_X, TITLE_LOGO_POS_Y, 0.0f);
-		pVtx[1].vtx = D3DXVECTOR3(TITLE_LOGO_POS_X + TITLE_LOGO_WIDTH, TITLE_LOGO_POS_Y, 0.0f);
-		pVtx[2].vtx = D3DXVECTOR3(TITLE_LOGO_POS_X, TITLE_LOGO_POS_Y + TITLE_LOGO_HEIGHT, 0.0f);
-		pVtx[3].vtx = D3DXVECTOR3(TITLE_LOGO_POS_X + TITLE_LOGO_WIDTH, TITLE_LOGO_POS_Y + TITLE_LOGO_HEIGHT, 0.0f);
-
-		// テクスチャのパースペクティブコレクト用
-		pVtx[0].rhw =
-		pVtx[1].rhw =
-		pVtx[2].rhw =
-		pVtx[3].rhw = 1.0f;
-
-		// 反射光の設定
-		pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaLogo);
-		pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaLogo);
-		pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaLogo);
-		pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaLogo);
-
-		// テクスチャ座標の設定
-		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-		pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
-
-		// 頂点データをアンロックする
-		g_pD3DVtxBuffTitleLogo->Unlock();
-	}
-
-
-	// オブジェクトの頂点バッファを生成
-    if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用に確保するバッファサイズ(バイト単位)
-												D3DUSAGE_WRITEONLY,			// 頂点バッファの使用法　
-												FVF_VERTEX_2D,				// 使用する頂点フォーマット
-												D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラスを指定
-												&g_pD3DVtxBuffStart,		// 頂点バッファインターフェースへのポインタ
-												NULL)))						// NULLに設定
-	{
-        return E_FAIL;
-	}
-
-	{//頂点バッファの中身を埋める
-		VERTEX_2D *pVtx;
+		VERTEX_3D *pVtx;
 
 		// 頂点データの範囲をロックし、頂点バッファへのポインタを取得
 		g_pD3DVtxBuffStart->Lock(0, 0, (void**)&pVtx, 0);
 
-		// 頂点座標の設定
-		pVtx[0].vtx = D3DXVECTOR3(START_POS_X, START_POS_Y, 0.0f);
-		pVtx[1].vtx = D3DXVECTOR3(START_POS_X + START_WIDTH, START_POS_Y, 0.0f);
-		pVtx[2].vtx = D3DXVECTOR3(START_POS_X, START_POS_Y + START_HEIGHT, 0.0f);
-		pVtx[3].vtx = D3DXVECTOR3(START_POS_X + START_WIDTH, START_POS_Y + START_HEIGHT, 0.0f);
-
-		// テクスチャのパースペクティブコレクト用
-		pVtx[0].rhw =
-		pVtx[1].rhw =
-		pVtx[2].rhw =
-		pVtx[3].rhw = 1.0f;
-
-		// 反射光の設定
-		pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-		pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-		pVtx[2].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-		pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-
-		// テクスチャ座標の設定
-		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-		pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
-
-		// 頂点データをアンロックする
-		g_pD3DVtxBuffStart->Unlock();
-	}
-
-	return S_OK;
-}
-
-//=============================================================================
-// 頂点の作成
-//=============================================================================
-void SetColorTitleLogo(void)
-{
-	{//頂点バッファの中身を埋める
-		VERTEX_2D *pVtx;
-
-		// 頂点データの範囲をロックし、頂点バッファへのポインタを取得
-		g_pD3DVtxBuffTitleLogo->Lock(0, 0, (void**)&pVtx, 0);
-
 		// 反射光の設定
 		pVtx[0].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaLogo);
 		pVtx[1].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaLogo);
@@ -412,7 +251,7 @@ void SetColorTitleLogo(void)
 		pVtx[3].diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, g_fAlphaLogo);
 
 		// 頂点データをアンロックする
-		g_pD3DVtxBuffTitleLogo->Unlock();
+		g_pD3DVtxBuffStart->Unlock();
 	}
 
 }

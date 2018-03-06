@@ -74,8 +74,8 @@ char *player_textureFileName[MAX_PLAYER] =
 	TEXTURE_PLAYER_WIZARD,
 };
 
-int rank;									// 脱落したプレイヤーの順位
-int oldrank;
+int g_rank;									// 脱落したプレイヤーの順位
+int g_oldrank;
 //=============================================================================
 // 初期化処理
 //=============================================================================
@@ -84,7 +84,7 @@ HRESULT InitPlayer(void)
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	// 脱落したプレイヤーの順位初期化
-	rank = MAX_PLAYER;
+	g_rank = MAX_PLAYER;
 	// プレイ人数設定
 	g_num_player = MAX_PLAYER;
 
@@ -180,7 +180,7 @@ void UpdatePlayer(void)
 	bool dead = false;						// 今のフレームで脱落者が出たら
 
 	// 現在のランクを保存
-	oldrank = rank;
+	g_oldrank = g_rank;
 
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
@@ -256,12 +256,12 @@ void UpdatePlayer(void)
 			// 同じタイミングで複数脱落者が出たかどうか
 			if(dead == true)
 			{
-				RankCheck(no,oldrank);
+				RankCheck(no,g_oldrank);
 			}
 			else
 			{
 				dead = true;				// 脱落者が出た
-				RankCheck(no,rank);
+				RankCheck(no,g_rank);
 			}
 			g_playerWk[no].next_state = PLAYER_DEAD;
 		}
@@ -284,7 +284,7 @@ void UpdatePlayer(void)
 	// 脱落者が出た場合、次のプレイヤーの順位を上げる
 	if(dead == true)
 	{
-		rank--;
+		g_rank--;
 	}
 }
 

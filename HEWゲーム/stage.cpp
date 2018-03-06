@@ -165,7 +165,7 @@ HRESULT InitStage(void)
 	// 頂点作成
 	MakeVertex(pDevice, &g_obstacle_vtx, &D3DXVECTOR3(0.0f, OBSTACLE_HEIGHT / 2.0f, 0.0f), OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
 	MakeVertex(pDevice, &g_lane_vtx, NULL, LANE_WIDTH, LANE_HEIGHT);
-	MakeVertex(pDevice, &g_count_vtx, NULL, COUNT_WIDTH, COUNT_HEIGHT);
+	MakeVertex(pDevice, &g_count_vtx, NULL, COUNT_WIDTH, COUNT_HEIGHT);	// カウントダウン用
 
 	// 最初はカウントダウンから
 	g_stage_state = STAGE_STATE_COUNTDOWN;
@@ -329,12 +329,11 @@ void UpdateStageGameplay(void)
 			if ((obstacle->pos.x > JUMP_OVER_DECISION_POS_X) && obstacle->should_give_skillpoint && !player->is_invincible)
 			{
 			
-				//player->skillpoint++;
 				// スキルポイントを上げる
 				player->skillpoint++;
 				if(player->kengen == true)
 				{
-					UpdateSkill(1);
+					AddSkillGauge(1);
 				}
 				obstacle->should_give_skillpoint = false;
 			}

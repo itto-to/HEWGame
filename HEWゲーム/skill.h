@@ -58,7 +58,7 @@ typedef enum
 HRESULT InitSkill(void);
 void UninitSkill(void);
 void UpdateSkill(float gageup);
-HRESULT DrawSkill(void);
+void DrawSkill(void);
 HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice);
 void SetColorSkill(void);
 void GetSkill(void);

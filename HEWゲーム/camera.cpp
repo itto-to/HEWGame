@@ -65,6 +65,9 @@ HRESULT InitCamera(void)
 	g_camera.screenBox.max = D3DXVECTOR3(g_camera.posEye.x + SCREEN_WIDTH / 2.0f, g_camera.posEye.y + SCREEN_HEIGHT / 2.0f, g_camera.posEye.z + VIEW_FAR_Z);
 	g_camera.screenBox.min = D3DXVECTOR3(g_camera.posEye.x - SCREEN_WIDTH / 2.0f, g_camera.posEye.y - SCREEN_HEIGHT / 2.0f, g_camera.posEye.z + VIEW_NEAR_Z);
 
+	// ÉJÉÅÉâèÓïÒÇÃê›íË
+	SetCamera();
+
 	//float vx,vz;
 	//vx = g_camera.posEye.x - g_camera.posAt.x;
 	//vz = g_posCameraEye.z - g_posCameraAt.z;
@@ -180,4 +183,14 @@ bool IsObjectOffscreen(BOUNDING_BOX objectBox)
 	}
 
 	return true;
+}
+
+float NearZ(void)
+{
+	return VIEW_NEAR_Z;
+}
+
+float FarZ(void)
+{
+	return VIEW_FAR_Z;
 }

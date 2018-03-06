@@ -14,6 +14,7 @@
 #include "input.h"
 #include "resource.h"
 #include "result.h"
+#include "light.h"
 #include "sound.h"
 #include "title.h"
 
@@ -340,6 +341,9 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// カメラの初期化
 	InitCamera();
 
+	// ライトの初期化
+	InitLight();
+
 	// 最初はタイトル画面に
 	SetScene(SCENE_TITLE);
 
@@ -371,6 +375,9 @@ void Uninit(void)
 
 	// Direct3Dオブジェクトの開放
 	SAFE_RELEASE(g_pD3D);
+
+	// ライトの終了処理
+	UninitLight();
 
 	// カメラの終了処理
 	UninitCamera();

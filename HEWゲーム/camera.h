@@ -22,5 +22,7 @@ void SetCamera(void);
 D3DXVECTOR3 GetRotCamera(void);
 D3DXMATRIX GetMtxView(void);
 bool IsObjectOffscreen(BOUNDING_BOX objectBox);
+float NearZ(void);
+float FarZ(void);
 
 #endif
