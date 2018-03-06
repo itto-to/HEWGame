@@ -168,20 +168,19 @@ void UpdatePlayer(void)
 {
 #ifdef _DEBUG
 	SKILL *skillWk = GetSkillWk(0);
-<<<<<<< HEAD
-	// スキルレベル調整
+
+	// TEST: スキルレベル調整
 	if (GetKeyboardTrigger(DIK_1))
 		skillWk->lv = min(skillWk->lv + 1, 3);
 	if (GetKeyboardTrigger(DIK_2))
 		skillWk->lv = max(skillWk->lv - 1, 0);
 #endif
-=======
+
 	RESULT *result = GetResult(0);
 	bool dead = false;						// 今のフレームで脱落者が出たら
 
 	// 現在のランクを保存
 	oldrank = rank;
->>>>>>> 4f3be628524b288d711aa7094ab03acd72035386
 
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{

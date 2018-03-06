@@ -751,27 +751,17 @@ void SkillAct(int player_no)
 					// ブロックの表示のみ
 					// 音鳴らす
 					PlaySound(SOUND_LABEL_SKILL_OJYAMA);
-<<<<<<< HEAD
 					SetSkillAct(player[i].pos, EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 					break;
-=======
-					SetSkillAct(D3DXVECTOR3(player[i].pos.x, player[i].pos.y, player[i].pos.z),
-						EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
->>>>>>> 4f3be628524b288d711aa7094ab03acd72035386
 				case KAMINARI:
 					// 動作
 					// 音鳴らす
 					PlaySound(SOUND_LABEL_SKILL_THANDER);
 					// ライフ減少は雷とプレイヤーがぶつかったときに
-<<<<<<< HEAD
-					SetSkillAct(player[i].pos, EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-					break;
-=======
 					SetSkillAct(D3DXVECTOR3(player[i].pos.x, player[i].pos.y+ THANDER_POS_Y, player[i].pos.z),
 						EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
->>>>>>> 4f3be628524b288d711aa7094ab03acd72035386
+					break;
 				}
 			}
 		}
