@@ -8,6 +8,8 @@
 #include "input.h"
 #include "fade.h"
 #include "player.h"
+#include "mesh.h"
+#include "game.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -22,6 +24,16 @@
 
 #define	COUNT_APPERA_RESULT	(60)		// リザルトロゴ出現までの待ち時間	
 #define	LIMIT_COUNT_WAIT	(60 * 5)	// 待ち時間
+
+#define RESULTNO_1	("data/TEXTURE/result_1st.png")
+#define RESULTNO_2	("data/TEXTURE/result_2nd.png")
+#define RESULTNO_3	("data/TEXTURE/result_3rd.png")
+#define RESULTNO_4	("data/TEXTURE/result_4th.png")
+
+#define MAX_RANK	(4)				// びりのじゅんい
+
+// 順位の表示位置
+#define RANKNO_POS_X			(30.0f)
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -40,6 +52,17 @@ int						g_nCountAppearResult = 0;		// 出現までの待ち時間
 float					g_fAlphaResult = 0.0f;			// リザルトロゴのα値
 int						g_nCountWaitResult = 0;			// 待ち時間
 RESULT resultWk[MAX_PLAYER];
+
+// ここから先は数字を表示するためのもの
+RESULTNO resultno[4];
+
+char *resultno_FileName[]=
+{
+	RESULTNO_1,
+	RESULTNO_2,
+	RESULTNO_3,
+	RESULTNO_4,
+};
 
 //=============================================================================
 // 初期化処理
@@ -64,6 +87,14 @@ HRESULT InitResult(void)
 	D3DXCreateTextureFromFile(pDevice,						// デバイスへのポインタ
 								TEXTURE_RESULT_LOGO,		// ファイルの名前
 								&g_pD3DTextureResultLogo);	// 読み込むメモリー
+
+	for(int i = 0; i < MAX_RANK; i++)
+	{
+		// 順位表示用テクスチャの読み込み
+		D3DXCreateTextureFromFile(pDevice,
+			resultno_FileName[i],
+			&resultno[i].texture);
+	}
 
 	return S_OK;
 }
@@ -95,6 +126,15 @@ void UninitResult(void)
 	{// 頂点バッファの開放
 		g_pD3DVtxBuffResultLogo->Release();
 		g_pD3DVtxBuffResultLogo = NULL;
+	}
+
+	for(int i = 0; i < MAX_RANK;i++)
+	{
+		if(resultno[i].texture != NULL)
+		{// 開放
+			resultno[i].buff->Release();
+			resultno[i].buff = NULL;
+		}
 	}
 }
 
@@ -137,8 +177,9 @@ void DrawResult(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
+
 	// 頂点バッファをデバイスのデータストリームにバインド
-    pDevice->SetStreamSource(0, g_pD3DVtxBuffResult, 0, sizeof(VERTEX_2D));
+	pDevice->SetStreamSource(0, g_pD3DVtxBuffResult, 0, sizeof(VERTEX_2D));
 
 	// 頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
@@ -152,7 +193,7 @@ void DrawResult(void)
 	// ロゴ
 
 	// 頂点バッファをデバイスのデータストリームにバインド
-    pDevice->SetStreamSource(0, g_pD3DVtxBuffResultLogo, 0, sizeof(VERTEX_2D));
+	pDevice->SetStreamSource(0, g_pD3DVtxBuffResultLogo, 0, sizeof(VERTEX_2D));
 
 	// 頂点フォーマットの設定
 	pDevice->SetFVF(FVF_VERTEX_2D);
@@ -162,6 +203,28 @@ void DrawResult(void)
 
 	// ポリゴンの描画
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
+
+	// プレイヤーの順位によって描画するテクスチャが変わる
+	// DrawMesh関数
+	for(int i = 0; i < MAX_PLAYER; i++)
+	{
+		// そのプレイヤーに対応するresultWk[i].rankの中身によって表示テクスチャがかわる
+		switch(resultWk[i].rank)
+		{
+		case 1:
+			DrawMesh(resultno[0].buff, resultno[0].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+				break;
+		case 2:
+			DrawMesh(resultno[1].buff, resultno[1].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+			break;
+		case 3:
+			DrawMesh(resultno[2].buff, resultno[2].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+			break;
+		case 4:
+			DrawMesh(resultno[3].buff, resultno[3].texture, D3DXVECTOR3(RANKNO_POS_X, LANE_Y(i), LANE_Z(i)), D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(1.0f, 1.0f, 1.0f));
+			break;
+		}
+	}
 }
 
 //=============================================================================
@@ -307,6 +370,8 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 			g_pD3DVtxBuffResultLogo->Unlock();
 		}
 	}
+
+	MakeVertex
 	return S_OK;
 }
 
