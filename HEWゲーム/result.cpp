@@ -149,6 +149,8 @@ void DrawResult(void)
 	// ポリゴンの描画
 	pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, NUM_POLYGON);
 
+	// ロゴ
+
 	// 頂点バッファをデバイスのデータストリームにバインド
     pDevice->SetStreamSource(0, g_pD3DVtxBuffResultLogo, 0, sizeof(VERTEX_2D));
 
@@ -328,4 +330,15 @@ void SetColorResultLogo(void)
 		// 頂点データをアンロックする
 		g_pD3DVtxBuffResultLogo->Unlock();
 	}
+}
+
+
+//*********************************************************************
+// RESULT GetResult(int no)
+// ゲット関数
+// 指定された番号を返す
+//*********************************************************************
+RESULT *GetResult(int no)
+{
+	return &resultWk[no];
 }
