@@ -95,6 +95,7 @@ HRESULT InitPlayer(void)
 		g_playerWk[no].rotDest = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		g_playerWk[no].scl     = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 		g_playerWk[no].ground  = g_playerWk[no].pos.y;
+		g_playerWk[no].ground_pos = g_playerWk[no].pos;
 		g_playerWk[no].life    = MAX_LIFE;
 		g_playerWk[no].state   = PLAYER_STARTDASH;
 		g_playerWk[no].speed_factor = 1.0f;
@@ -157,7 +158,14 @@ void UninitPlayer(void)
 //=============================================================================
 void UpdatePlayer(void)
 {
+#ifdef _DEBUG
 	SKILL *skillWk = GetSkillWk(0);
+	// スキルレベル調整
+	if (GetKeyboardTrigger(DIK_1))
+		skillWk->lv = min(skillWk->lv + 1, 3);
+	if (GetKeyboardTrigger(DIK_2))
+		skillWk->lv = max(skillWk->lv - 1, 0);
+#endif
 
 	for(int no = 0; no < MAX_PLAYER; no++)
 	{
@@ -188,6 +196,9 @@ void UpdatePlayer(void)
 		}
 
 #ifdef _DEBUG
+
+
+		// プレイヤー位置調整用
 		//for (int i = 0; i < MAX_PLAYER; i++)
 		//{
 		//	if (GetKeyboardPress(DIK_DOWN)) {
@@ -220,13 +231,8 @@ void UpdatePlayer(void)
 
 		// スキル発動
 		if (IsButtonTriggered(no, BUTTON_SKILL) || GetKeyboardTrigger(KEY_SKILL)) {
-			// まず5回飛んでいるのかを確認
-			//if(g_playerWk[no].skillpoint >= 5)
-			{
-				skillWk->lv = 3;
-				//5回飛んでいた場合スキル発動
+			if (g_playerWk[no].kengen)	// 権限があれば発動可能
 				SkillAct(no);
-			}
 		}
 
 		// 死亡判定

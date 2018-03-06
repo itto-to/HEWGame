@@ -21,9 +21,9 @@
 #define HALF_PLAYER_HEIGHT	(PLAYER_HEIGHT / 2)
 #define HALF_PLAYER_DEPTH	(0.0f)
 
-#define PLAYER_JUMP_SPEED	(9.f)						// プレイヤーのジャンプ初速
-#define PLAYER_LARGE_JUMP_SPEED (12.f)					// プレイヤーの大ジャンプ初速
-#define GRAVITY_ACCELARATION (-0.5f)					// 重力加速度
+#define PLAYER_JUMP_SPEED	(8.f)						// プレイヤーのジャンプ初速
+#define PLAYER_LARGE_JUMP_SPEED (10.f)					// プレイヤーの大ジャンプ初速
+#define GRAVITY_ACCELARATION (-0.45f)					// 重力加速度
 
 #define PLAYER_HIT_BOX		{D3DXVECTOR3(-20.0f, 0.0f, 0.0f), D3DXVECTOR3(20.0f, 70.0f, 0.0f)}
 #define SLIDING_HIT_BOX		{D3DXVECTOR3(-20.0f, 0.0f, 0.0f), D3DXVECTOR3(20.0f, 20.0f, 0.0f)}
@@ -60,6 +60,7 @@ typedef struct
 	D3DXVECTOR3 rotDest;		// 目的の向き
 	D3DXVECTOR3 scl;			// スケール
 	float ground;				// 地面の高さ
+	D3DXVECTOR3 ground_pos;		// 地面の座標
 	float distance;				// 進んだ距離
 	float jump_speed;			// ジャンプ時の初速
 	int life;					// プレイヤーの体力

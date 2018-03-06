@@ -186,8 +186,6 @@ HRESULT InitStage(void)
 	// ステージに合わせて障害物接地
 	SetStageObstacle(g_stage_type);
 
-	// 乱数初期化
-	srand((unsigned int)time(NULL));
 
 	return S_OK;
 }
@@ -287,7 +285,9 @@ void UpdateStageStartDash(void)
 	if (num_dashing_player != 0)	// ダッシュゲージが満タンのプレイヤーがいたら
 	{
 		// その中からランダムで決定しスキル発動権をあげる
-		int skill_player_no = dashing_players[rand() % num_dashing_player];
+		srand((unsigned int)time(NULL));			// 乱数初期化
+		int idx = rand() % num_dashing_player;
+		int skill_player_no = dashing_players[idx];
 		skillwinner(skill_player_no);
 
 		g_stage_state = STAGE_STATE_GAMEPLAY;	// ゲーム本編に移行

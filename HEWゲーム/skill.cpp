@@ -28,7 +28,7 @@
 #define SKILLGAGE_POS_X	(10.0f)
 #define SKILLGAGE_POS_Y	(10.0f)
 // 長さ
-#define SKILLGAGE_WIDTH	(469.0f)
+#define SKILLGAGE_WIDTH		(469.0f)
 #define SKILLGAGE_HEIGHT	(98.0f)
 
 // ゲージのバーの部分
@@ -403,7 +403,7 @@ HRESULT MakeVertexSkill(LPDIRECT3DDEVICE9 pDevice)
 {
 	// ゲージの枠部分のバッファ作成
 	if(FAILED(pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * NUM_VERTEX,	// 頂点データ用、確保するバッファのサイズ
-		D3DUSAGE_WRITEONLY,		// 使用法
+		D3DUSAGE_WRITEONLY,			// 使用法
 		FVF_VERTEX_2D,				// 頂点フォーマット
 		D3DPOOL_MANAGED,			// リソースのバッファを保持するメモリクラス
 		&skillWk.Buff_waku,			// 頂点バッファインタフェースへのポインタ
@@ -671,7 +671,7 @@ int skill_count_winner(void)
 //******************************************************************************
 // スキルポイントリセット
 // 引数:	int no
-// 説明:	ジャンプに失敗した人の番号を受け取って、その人のポイントを0にしちゃう
+// 説明:	プレイヤーの番号を受け取って、その人のポイントを0にしちゃう
 //******************************************************************************
 void SkillReset(int no)
 {
@@ -693,14 +693,15 @@ void SkillAct(int player_no)
 	srand((unsigned)time(NULL));
 	int randum;
 
+
+
 	// スキル発動中の場合実行されない
-	if(skillWk.moving != true)
+	if(skillWk.moving != true && skillWk.lv > 0)
 	{
 		// 効果発動時に権限を失う
 		player[player_no].kengen = false;
 		SkillReset(player_no);
 		skillWk.moving = true;
-		
 
 		// 効果の発動
 		// 各プレイヤーごとに効果を発動していく
@@ -743,14 +744,14 @@ void SkillAct(int player_no)
 					// 音鳴らす
 					PlaySound(SOUND_LABEL_SKILL_OJYAMA);
 					SetSkillAct(player[i].pos, EFFECT_OJYAMA, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
+					break;
 				case KAMINARI:
 					// 動作
 					// 音鳴らす
 					PlaySound(SOUND_LABEL_SKILL_THANDER);
 					// ライフ減少は雷とプレイヤーがぶつかったときに
 					SetSkillAct(player[i].pos, EFFECT_KAMINARI, i, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
+					break;
 				}
 			}
 		}

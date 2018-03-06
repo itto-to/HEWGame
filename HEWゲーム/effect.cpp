@@ -336,9 +336,6 @@ int SetEffect(D3DXVECTOR3 pos, D3DXVECTOR3 move, D3DXCOLOR col, float fSizeX, fl
 			g_aEffect[nCntEffect].nDecAlpha = col.a / nTimer;
 			g_aEffect[nCntEffect].bUse = true;
 
-			// 頂点座標の設定
-			SetVertexEffect(nCntEffect, fSizeX, fSizeY);
-
 			// 頂点カラーの設定
 			SetColorEffect(nCntEffect,
 							D3DXCOLOR(g_aEffect[nCntEffect].col.r,g_aEffect[nCntEffect].col.b,
