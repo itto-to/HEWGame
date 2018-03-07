@@ -18,8 +18,8 @@
 #define	TEXTURE_RESULT		"data/TEXTURE/bg_result.jpg"		// 読み込むテクスチャファイル名
 #define	TEXTURE_RESULT_LOGO	"data/TEXTURE/result_logo.png"	// 読み込むテクスチャファイル名
 
-#define	RESULT_LOGO_POS_X	(240)		// リザルトロゴの位置(X座標)
-#define	RESULT_LOGO_POS_Y	(0)		// リザルトロゴの位置(Y座標)
+#define	RESULT_LOGO_POS_X	(0)		// リザルトロゴの位置(X座標)
+#define	RESULT_LOGO_POS_Y	(SCREEN_CENTER_Y)		// リザルトロゴの位置(Y座標)
 #define	RESULT_LOGO_WIDTH	(800)		// リザルトロゴの幅
 #define	RESULT_LOGO_HEIGHT	(240)		// リザルトロゴの高さ
 
@@ -38,12 +38,12 @@
 #define MAX_RANK	(4)				// びりのじゅんい
 
 // 順位の表示位置
-#define RANKNO_POS_X			(30.0f)
+#define RANKNO_POS_X			(RESULT_LOGO_WIDTH + 30.0f)
 
 // リザルト画面に表示されるプレイヤー
 #define	RESULTPLAYER_HEIGHT	(SCREEN_HEIGHT /4)
 #define RESULTPLAYER_WIDTH	(SCREEN_HEIGHT /4/2)
-#define RESULTPLAYER_POS_X	(SCREEN_CENTER_X)
+#define RESULTPLAYER_POS_X	( RANKNO_POS_X + 10.0f)
 //#define RESULTPLAYER_POS_Y	(SCREEN_
 //*****************************************************************************
 // プロトタイプ宣言
@@ -75,7 +75,7 @@ char *resultno_FileName[] =
 	RESULTNO_4,
 };
 
-char *resultplayer_FileName[]=
+char *resultplayer_FileName[] =
 {
 	"data/TEXTURE/player_knight.png",
 	"data/TEXTURE/player_thief.png",
@@ -279,7 +279,7 @@ void DrawResult(void)
 	// 頂点バッファをデバイスのデータストリームにバインド
 	for(int i = 0; i < MAX_PLAYER; i++)
 	{
-		
+
 
 		pDevice->SetStreamSource(0, resultno[i].buff, 0, sizeof(VERTEX_2D));
 
@@ -381,8 +381,8 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 		g_pD3DVtxBuffResultLogo->Lock(0, 0, (void**)&pVtx, 0);
 
 		// 頂点座標の設定
-		pVtx[0].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y, 0.0f);
-		pVtx[1].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y, 0.0f);
+		pVtx[0].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y / 2, 0.0f);
+		pVtx[1].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y / 2, 0.0f);
 		pVtx[2].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
 		pVtx[3].vtx = D3DXVECTOR3(RESULT_LOGO_POS_X + RESULT_LOGO_WIDTH, RESULT_LOGO_POS_Y + RESULT_LOGO_HEIGHT, 0.0f);
 
@@ -431,10 +431,10 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 			resultno[i].buff->Lock(0, 0, (void**)&pVtx, 0);
 
 			// 頂点座標の設定
-			pVtx[0].vtx = D3DXVECTOR3(0.0f, 0.0f + (i*RESULTNO_HEIGHT), 0.0f);
-			pVtx[1].vtx = D3DXVECTOR3(RESULTNO_WIDTH, 0.0f + (i*RESULTNO_HEIGHT), 0.0f);
-			pVtx[2].vtx = D3DXVECTOR3(0.0f, RESULTNO_HEIGHT + (i*RESULTNO_HEIGHT), 0.0f);
-			pVtx[3].vtx = D3DXVECTOR3(RESULTNO_WIDTH, RESULTNO_HEIGHT+ (i*RESULTNO_HEIGHT), 0.0f);
+			pVtx[0].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + 0.0f, 0.0f + (i*RESULTNO_HEIGHT), 0.0f);
+			pVtx[1].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + RESULTNO_WIDTH, 0.0f + (i*RESULTNO_HEIGHT), 0.0f);
+			pVtx[2].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + 0.0f, RESULTNO_HEIGHT + (i*RESULTNO_HEIGHT), 0.0f);
+			pVtx[3].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + RESULTNO_WIDTH, RESULTNO_HEIGHT + (i*RESULTNO_HEIGHT), 0.0f);
 
 			// テクスチャのパースペクティブコレクト用
 			pVtx[0].rhw =
@@ -458,7 +458,7 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 			resultno[i].buff->Unlock();
 		}
 	}
-	
+
 
 	//++++++++++++++++++++++++++++++++++++++++
 	// リザルト画面に表示するためのプレイヤー
@@ -482,10 +482,10 @@ HRESULT MakeVertexResult(LPDIRECT3DDEVICE9 pDevice)
 			resultno[i].player_buff->Lock(0, 0, (void**)&pVtx, 0);
 
 			// 頂点座標の設定
-			pVtx[0].vtx = D3DXVECTOR3(RESULTNO_WIDTH          , 0.0f + (i*RESULTPLAYER_HEIGHT), 0.0f);
-			pVtx[1].vtx = D3DXVECTOR3(RESULTNO_WIDTH+ RESULTPLAYER_WIDTH, 0.0f + (i*RESULTPLAYER_HEIGHT), 0.0f);
-			pVtx[2].vtx = D3DXVECTOR3(RESULTNO_WIDTH          , RESULTPLAYER_HEIGHT + (i*RESULTPLAYER_HEIGHT), 0.0f);
-			pVtx[3].vtx = D3DXVECTOR3(RESULTNO_WIDTH+ RESULTPLAYER_WIDTH, RESULTPLAYER_HEIGHT + (i*RESULTPLAYER_HEIGHT), 0.0f);
+			pVtx[0].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + RESULTNO_WIDTH, 0.0f + (i*RESULTPLAYER_HEIGHT), 0.0f);
+			pVtx[1].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + RESULTNO_WIDTH + RESULTPLAYER_WIDTH, 0.0f + (i*RESULTPLAYER_HEIGHT), 0.0f);
+			pVtx[2].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + RESULTNO_WIDTH, RESULTPLAYER_HEIGHT + (i*RESULTPLAYER_HEIGHT), 0.0f);
+			pVtx[3].vtx = D3DXVECTOR3(RESULT_LOGO_WIDTH + RESULTNO_WIDTH + RESULTPLAYER_WIDTH, RESULTPLAYER_HEIGHT + (i*RESULTPLAYER_HEIGHT), 0.0f);
 
 			// テクスチャのパースペクティブコレクト用
 			pVtx[0].rhw =
@@ -552,8 +552,8 @@ void RankCheck(int no, int rank)
 		checkcount--;
 		// ランクを決定
 
-		resultWk[no].rank = rank-1;			// rankの値より1少ない番号が順位
-		// 生きているキャラクターが居ない場合リザルト画面へ
+		resultWk[no].rank = rank - 1;			// rankの値より1少ない番号が順位
+												// 生きているキャラクターが居ない場合リザルト画面へ
 		if(checkcount == 1)
 		{
 			SetFade(FADE_OUT);
