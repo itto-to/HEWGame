@@ -40,7 +40,7 @@ typedef struct {
 // グローバル変数
 //*****************************************************************************
 BACKGROUND g_background;
-LPDIRECT3DTEXTURE9 g_bg_texture[STAGE_MAX];		// テクスチャのポインタ
+LPDIRECT3DTEXTURE9 g_obstacle_texture[STAGE_MAX];		// テクスチャのポインタ
 
 
 HRESULT InitBackground()
@@ -73,11 +73,15 @@ HRESULT InitBackground()
 			break;
 		}
 
-		if (FAILED(D3DXCreateTextureFromFile(pDevice, texture_filename, &g_bg_texture[stage_no])))
+		if (FAILED(D3DXCreateTextureFromFile(pDevice, texture_filename, &g_obstacle_texture[stage_no])))
 		{
 			return E_FAIL;
 		}
 	}
+
+	// テクスチャ設定
+	STAGE_TYPE stage = GetStage();
+	g_background.texture = g_obstacle_texture[stage];
 
 	return S_OK;
 }
@@ -88,7 +92,7 @@ void UninitBackground()
 
 	for (int stage_no = 0; stage_no < STAGE_MAX; stage_no++)
 	{
-		SAFE_RELEASE(g_bg_texture[stage_no]);
+		SAFE_RELEASE(g_obstacle_texture[stage_no]);
 	}
 }
 
@@ -96,7 +100,7 @@ void UninitBackground()
 void UpdateBackground()
 {
 	STAGE_TYPE stage = GetStage();
-	g_background.texture = g_bg_texture[stage];
+	g_background.texture = g_obstacle_texture[stage];
 
 #ifdef _DEBUG
 	PrintDebugProc("***背景***\n");

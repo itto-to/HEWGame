@@ -97,7 +97,7 @@ LPDIRECT3DVERTEXBUFFER9 g_count_vtx;	// カウントダウンの頂点
 LPDIRECT3DTEXTURE9 g_count_tex[MAX_COUNTDOWN];		// カウントダウンのテクスチャ
 OBSTACLE g_obstacle[MAX_PLAYER][MAX_NUM_OBSTACLE];	// 障害物配列
 STAGE_DATA g_stage_data[STAGE_MAX];
-LPDIRECT3DTEXTURE9 g_bg_texture[STAGE_MAX][OBSTACLE_MAX];
+LPDIRECT3DTEXTURE9 g_obstacle_texture[STAGE_MAX][OBSTACLE_MAX];
 LPDIRECT3DVERTEXBUFFER9 g_obstacle_vtx;
 
 
@@ -152,7 +152,7 @@ HRESULT InitStage(void)
 
 			D3DXCreateTextureFromFile(pDevice,					// デバイスへのポインタ
 				filename,		// ファイルの名前
-				&g_bg_texture[stage_no][obstacle_no]);	// 読み込むメモリー
+				&g_obstacle_texture[stage_no][obstacle_no]);	// 読み込むメモリー
 		}
 	}
 
@@ -202,13 +202,28 @@ void UninitStage(void)
 	// 障害物テクスチャ
 	for (int stage_no = 0; stage_no < STAGE_MAX; stage_no++) {
 		for (int obstacle_no = 0; obstacle_no < OBSTACLE_MAX; obstacle_no++) {
-			SAFE_RELEASE(g_obstacle[stage_no][obstacle_no].texture);
+			SAFE_RELEASE(g_obstacle_texture[stage_no][obstacle_no]);
+			g_obstacle[stage_no][obstacle_no].use = false;
 		}
 	}
 
 	SAFE_RELEASE(g_obstacle_vtx);	// 障害物頂点
 	SAFE_RELEASE(g_lane_vtx);		// レーン頂点
 	SAFE_RELEASE(g_lane_tex);		// レーンテクスチャ
+	SAFE_RELEASE(g_count_vtx);		// カウントダウン頂点
+	for (int i = 0; i < MAX_COUNTDOWN; i++)	// カウントダウンテクスチャ
+	{
+		SAFE_RELEASE(g_count_tex[i]);
+	}
+
+	// useをfalseに
+	for (int player_no = 0; player_no < MAX_PLAYER; player_no++)
+	{
+		for (int obstacle_no = 0; obstacle_no < MAX_NUM_OBSTACLE; obstacle_no++)
+		{
+			g_obstacle[player_no][obstacle_no].use = false;
+		}
+	}
 }
 
 // ステージ更新処理
@@ -578,15 +593,15 @@ void SetStageObstacle(STAGE_TYPE stage)
 
 			switch(tile) {
 			case CHAR_JUMP:
-				obstacle.texture = g_bg_texture[stage][OBSTACLE_JUMP];
+				obstacle.texture = g_obstacle_texture[stage][OBSTACLE_JUMP];
 				obstacle.hit_box = OBSTACLE_JUMP_HIT_BOX;
 				break;
 			case CHAR_LARGEJUMP:
-				obstacle.texture = g_bg_texture[stage][OBSTACLE_LARGE_JUMP];
+				obstacle.texture = g_obstacle_texture[stage][OBSTACLE_LARGE_JUMP];
 				obstacle.hit_box = OBSTACLE_LARGEJUMP_HIT_BOX;
 				break;
 			case CHAR_SLIDING:
-				obstacle.texture = g_bg_texture[stage][OBSTACLE_SLIDING];
+				obstacle.texture = g_obstacle_texture[stage][OBSTACLE_SLIDING];
 				obstacle.hit_box = OBSTACLE_SLIDING_HIT_BOX;
 				break;
 			default:

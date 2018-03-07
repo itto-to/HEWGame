@@ -216,7 +216,18 @@ void UpdateResult(void)
 		}
 	}
 
-	if(GetKeyboardTrigger(DIK_RETURN))
+
+	bool start = false;
+	// パッドでスタート
+	for (int pad_no = 0; pad_no < NumPad(); pad_no++) {
+		if (IsButtonTriggered(pad_no, BUTTON_GAME_START) || IsButtonTriggered(pad_no, BUTTON_CONFIRM))
+			start = true;
+	}
+	// キーボードでスタート
+	if (GetKeyboardTrigger(DIK_RETURN))
+		start = true;;
+
+	if(start && !IsFading())
 	{// Enter押したら、フェードアウトしてモードを切り替えいく
 		SetFade(FADE_OUT);
 	}

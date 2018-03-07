@@ -17,8 +17,6 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define BUTTON_GAME_START	(BUTTON_START)
-
 #define	TEXTURE_TITLE		"data/TEXTURE/bg_title.png"		// 読み込むテクスチャファイル名
 #define	TEXTURE_TITLE_LOGO	"data/TEXTURE/title_logo.png"	// 読み込むテクスチャファイル名
 #define	TEXTURE_LOGO_START	"data/TEXTURE/press_start.png"	// 読み込むテクスチャファイル名
@@ -166,7 +164,7 @@ void UpdateTitle(void)
 	bool start = false;
 	// パッドでスタート
 	for (int pad_no = 0; pad_no < NumPad(); pad_no++) {
-		if (IsButtonTriggered(pad_no, BUTTON_GAME_START))
+		if (IsButtonTriggered(pad_no, BUTTON_GAME_START) || IsButtonTriggered(pad_no, BUTTON_CONFIRM))
 			start = true;
 	}
 	// キーボードでスタート
@@ -182,7 +180,7 @@ void UpdateTitle(void)
 
 			g_nCountAppearStart = COUNT_APPERA_START;
 		}
-		else
+		else if (!IsFading())
 		{// ゲームへ
 
 			SetFade(FADE_OUT);

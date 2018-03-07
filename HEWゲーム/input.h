@@ -45,6 +45,9 @@ enum InputCommand {
 	kInputConfirm
 };
 
+#define BUTTON_GAME_START	(BUTTON_START)	// ゲームスタートボタン
+#define BUTTON_CONFIRM		(BUTTON_A | BUTTON_B)		// 次へ
+
 
 
 

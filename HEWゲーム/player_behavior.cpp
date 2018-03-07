@@ -168,6 +168,21 @@ void UpdatePlayerSliding(PLAYER *player)
 {
 	float speed_factor = GetLane(player->lane_no)->speed_factor;
 	player->state_counter += speed_factor;
+
+	// 大きさを変える
+#define SHRINK_COUNT	(5.0f)
+#define BULGE_COUNT		(25.0f)
+#define SHRINK_SCALE	(0.4f)
+	if (player->state_counter <= SHRINK_COUNT)
+	{
+		float scl = 1.0f * (SHRINK_COUNT - player->state_counter) / SHRINK_COUNT + SHRINK_SCALE * player->state / SHRINK_COUNT;
+		player->scl.x = player->scl.y = scl;
+	}
+	else if (player->state_counter >= BULGE_COUNT)
+	{
+
+	}
+
 	if (player->state_counter >= SLIDING_COUNT)	// スライディング時間が一定以上なら通常状態に戻す
 	{
 		player->next_state = PLAYER_ONGROUND;
@@ -199,6 +214,8 @@ void EnterPlayerSliding(PLAYER *player)
 {
 	// 当たり判定を小さくする
 	player->hit_box = SLIDING_HIT_BOX;
+	// 縮小音再生
+	PlaySound(SOUND_LABEL_MINIMAM);
 }
 
 void EnterPlayerDead(PLAYER *player)
@@ -225,6 +242,8 @@ void ExitPlayerSliding(PLAYER *player)
 {
 	// 当たり判定を元に戻す
 	player->hit_box = PLAYER_HIT_BOX;
+	// 大きさを元に戻す（念のため）
+	player->scl = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 }
 
 void ExitPlayerDead(PLAYER *player)
